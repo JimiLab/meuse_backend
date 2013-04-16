@@ -1,0 +1,92 @@
+"""
+last.fm wrapper for python lastfm.  
+"""
+import urllib2
+import json
+import time
+
+class LastFMWrapper:
+	"""
+	wrapper for last.fm api in python
+	"""
+	rootUrl = "http://ws.audioscrobbler.com/2.0/"	
+	apiKey = "**api_key**" 
+	header = {'User-agent' : 'meuse'}
+	numberOfTags = 100
+	numberOfArtists = 100
+	sleeptime = 2
+		
+	def getTopTags(self):
+		"""
+		gets the top 500 tags from lastfm and returns a list of tags
+		"""
+		output = []
+
+		url = self.rootUrl + "?method=chart.getTopTags&api_key=" + self.apiKey + "&format=json" + "&limit=" + str(self.numberOfTags)
+
+		req = urllib2.Request(url, None, self.header)
+		html = urllib2.urlopen(req).read()
+
+		jsondata = json.loads(html)
+
+		for tag in jsondata['tags']['tag']:
+			output.append(tag['name'])
+		
+		return output
+
+	def getTopArtistsForTag(self, tagName):
+		"""
+		returns a list of top artists for a given tag
+		"""
+		output = []
+
+		url = self.rootUrl + "?method=tag.gettopartists&tag=" + tagName + "&api_key=" + self.apiKey + "&format=json" + "&limit=" + str(self.numberOfArtists)
+		req = urllib2.Request(url, None, self.header)
+		html = urllib2.urlopen(req).read()
+
+		jsondata = json.loads(html)
+
+		for tag in jsondata['topartists']['artist']:
+			output.append(tag['name'])
+
+		return output
+
+	def getArtistSet(self):
+		"""
+		returns a list of artists got from the top numberOfArtists artists
+		from the top numberOfTags tags
+		"""
+		output = []
+		outputdict = {}
+		tagnumber = 0
+
+		#get the list of tags
+		tags = self.getTopTags()
+
+		print "There are " + str(len(tags)) + " tags"
+
+		#get the list of artists for each tag
+		for tag in tags:
+
+			#make it sleep for a bit, probably
+			time.sleep(self.sleeptime)
+
+			try:
+				print "Tag " + str(tag) + " is tag number " + str(tagnumber)
+
+				tagnumber += 1
+
+				artistsForTag = self.getTopArtistsForTag(tag)
+
+				for artist in artistsForTag:
+					outputdict[artist] = ""
+
+
+			except Exception, e:
+				print "Error with httplib"
+
+		output = outputdict.keys()
+
+		return output
+		
+		
