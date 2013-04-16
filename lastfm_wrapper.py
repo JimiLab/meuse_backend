@@ -14,7 +14,7 @@ class LastFMWrapper:
 	header = {'User-agent' : 'meuse'}
 	numberOfTags = 100
 	numberOfArtists = 100
-	sleeptime = 2
+	sleeptime = 2 
 		
 	def getTopTags(self):
 		"""
