@@ -15,6 +15,23 @@ class LastFMWrapper:
 	numberOfTags = 100
 	numberOfArtists = 100
 	sleeptime = 2 
+
+	def getSimilarArtist(self, artist):
+		"""
+		returns a list of artists similar to the artist
+		passed in
+		"""
+		output = []
+		url = self.rootUrl + "?method=artist.getsimilar&artist=" + artist + "&api_key=" + self.apiKey + "&format=json" + "&limit=" + str(self.numberOfArtists)
+		req = urllib2.Request(url, None, self.header)
+		html = urllib2.urlopen(req).read()
+
+		jsondata = json.loads(html)
+
+		for tag in jsondata['similarartists']['artist']:
+			output.append(tag['name'])
+
+		return output
 		
 	def getTopTags(self):
 		"""
