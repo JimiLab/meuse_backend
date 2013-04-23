@@ -11,10 +11,10 @@ class DatabaseWrapper:
 
 	database = "database/meuse.db"
 
-	def addArtists(self, artists):
+	def addArtists(self, artist, logplays):
 		"""
-		initializes artists table in the database by adding artists
-		into it
+		adds an artist and the log of the number of plays
+		into the database
 		"""
 		con = sqlite3.connect(self.database)
 		artist_key = 1
@@ -25,7 +25,7 @@ class DatabaseWrapper:
 
 			for artist in artists:
 
-				cursor.execute("insert into artists(name) values (?)", [artist])
+				cursor.execute("insert into artists(name, artist) values (?, ?)", ([artist], logplays))
 
 		except sqlite3.Error, e:
 
@@ -77,3 +77,4 @@ class DatabaseWrapper:
 
 			return output
 
+	def 
