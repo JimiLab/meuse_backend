@@ -35,5 +35,17 @@ class Downloader:
 
 		print "Artists succesfully added to database"
 
-		
+	def download_artist_popularity(self):
+		"""
+		downloads the listen count for each artist
+		from last.fm and adds log listen count into 
+		the popularity field in the database
+		"""
+		lfr = lastfm_wrapper.LastFMWrapper()
+		dbwr = database_wrapper.DatabaseWrapper()
+
+		artists = dbwr.getArtists()
+
+		for artist in artists:
+			print artist
 

@@ -4,6 +4,8 @@ last.fm wrapper for python lastfm.
 import urllib2
 import json
 import time
+import requests
+import math
 
 class LastFMWrapper:
 	"""
@@ -15,6 +17,39 @@ class LastFMWrapper:
 	numberOfTags = 100
 	numberOfArtists = 100
 	sleeptime = 2
+
+	def getLogListenCount(self, artist):
+		"""
+		gets the log listed count for artist
+		"""
+		listenCount = int(self.getArtistInfo(artist)['stats']['listeners'])
+
+		output = math.log(listenCount, 2)
+
+		return output
+
+	def getArtistInfo(self, artist):
+		"""
+		returns the 'info' for a given artist
+		"""
+		output = {}
+
+		args = {"method" : "artist.getinfo", 
+		"artist" : artist, "api_key" : self.apiKey,
+		"format" : "json"}
+
+		try:
+			data = requests.get(self.rootUrl, params=args)
+
+		except ConnectionError, e:
+			print "Error with connection"
+			jsondata = ""
+
+		jsondata = json.loads(data.text)
+
+		output = jsondata['artist']
+
+		return output
 
 	def getSimilarArtist(self, artist):
 		"""
