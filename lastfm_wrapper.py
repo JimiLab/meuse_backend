@@ -14,7 +14,7 @@ class LastFMWrapper:
 	header = {'User-agent' : 'meuse'}
 	numberOfTags = 100
 	numberOfArtists = 100
-	sleeptime = 2 
+	sleeptime = 2
 
 	def getSimilarArtist(self, artist):
 		"""
@@ -57,7 +57,8 @@ class LastFMWrapper:
 		"""
 		output = []
 
-		url = self.rootUrl + "?method=tag.gettopartists&tag=" + tagName + "&api_key=" + self.apiKey + "&format=json" + "&limit=" + str(self.numberOfArtists)
+		url = self.rootUrl + "?method=tag.gettopartists&tag=" + tagName +\
+		 "&api_key=" + self.apiKey + "&format=json" + "&limit=" + str(self.numberOfArtists)
 		req = urllib2.Request(url, None, self.header)
 		html = urllib2.urlopen(req).read()
 
