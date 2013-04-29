@@ -4,6 +4,8 @@ to the database
 """
 import database_wrapper
 import lastfm_wrapper
+import shoutcast_wrapper
+import pickle
 
 class Downloader:
 	"""
@@ -46,6 +48,67 @@ class Downloader:
 
 		artists = dbwr.getArtists()
 
-		for artist in artists:
-			print artist
+		counter = 0
 
+		artistDict = {}
+
+		print "downloading popularity data for " + str(len(artists)) + " artists"
+
+		for artist in artists:
+			counter = counter + 1
+
+			print "Getting data for artist " + str(counter) + ", " + artist
+
+			#get popularity
+			popularity = lfr.getLogListenCount(artist)
+
+			artistDict[artist] = popularity
+
+		print str(len(artistDict)) + " popularity scores downloaded"
+		print "Adding to database now"
+
+		pickle.dump(artists, open("artistPop", "wr+"))
+
+		dbwr.addArtistPopularity(artistDict)
+
+		print "All entries added to database"
+
+
+	def download_stations(self):
+		"""
+		downloads all the stations to the database
+		stations are found by, for each artist, checking
+		the stations playing that artist and adding that
+		station for that artist
+		"""
+		#vars
+		dbwr = database_wrapper.DatabaseWrapper()
+		lfr = lastfm_wrapper.LastFMWrapper()
+		shr = shoutcast_wrapper.ShoutcastWrapper()
+
+		artistsAndStations = {}
+
+		#get all the artists
+		artists = dbwr.getArtists()
+
+		#for each artist, get the set of playing stations
+		for artist in artists:
+
+			print "Downloading stations for artist " + artist
+
+			stationsForArtist = shr.getStationPlayingArtist(artist)
+
+			artistsAndStations[artist] = stationsForArtist
+
+		print "All stations downloaded, adding to database now"
+
+		#add the stations to the database
+		dbwr.addArtistsToStation(artistsAndStations)
+
+		print "all done!"
+
+def main():
+	downloader = Downloader()
+	downloader.download_artist_popularity()
+
+if  __name__ =='__main__':main()

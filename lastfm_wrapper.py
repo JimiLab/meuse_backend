@@ -21,16 +21,26 @@ class LastFMWrapper:
 	def getLogListenCount(self, artist):
 		"""
 		gets the log listed count for artist
+		on error, sets listen count to 0
 		"""
-		listenCount = int(self.getArtistInfo(artist)['stats']['listeners'])
 
-		output = math.log(listenCount, 2)
+		try:
+			listenCount = int(self.getArtistInfo(artist)['stats']['listeners'])
 
-		return output
+		except:
+			print "Connection error, setting log listen count to 0"
+			listenCount = 1
+
+		finally:
+			print str(listenCount)
+			output = math.log(listenCount, 2)
+
+			return output
 
 	def getArtistInfo(self, artist):
 		"""
 		returns the 'info' for a given artist
+		throws connectionError
 		"""
 		output = {}
 
@@ -40,16 +50,20 @@ class LastFMWrapper:
 
 		try:
 			data = requests.get(self.rootUrl, params=args)
+		
+			jsondata = json.loads(data.text)
 
-		except ConnectionError, e:
-			print "Error with connection"
-			jsondata = ""
+			output = jsondata['artist']
 
-		jsondata = json.loads(data.text)
+		except:
+			"print json value error!"
 
-		output = jsondata['artist']
+			#hard code 0 for listen count
+			output['stats'] = {}
+			output['stats']['listeners'] = 1
 
-		return output
+		finally:
+			return output
 
 	def getSimilarArtist(self, artist):
 		"""
