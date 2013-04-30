@@ -37,6 +37,34 @@ class LastFMWrapper:
 
 			return output
 
+	def getArtistTags(self, artist):
+		"""
+		gets the tags for the given artist; returns a list
+		"""
+		output = []
+		jsondata = []
+
+		args = {"method" : "artist.gettoptags", 
+		"artist" : artist, "api_key" : self.apiKey,
+		"format" : "json"}
+
+		try:
+			data = requests.get(self.rootUrl, params=args)
+		
+			jsondata = json.loads(data.text)
+
+			jsondata = jsondata['toptags']['tag']
+
+			for tag in jsondata:
+				output.append(tag['name'])
+
+		except:
+			"print json value error!"
+
+		finally:
+			return output
+
+
 	def getArtistInfo(self, artist):
 		"""
 		returns the 'info' for a given artist

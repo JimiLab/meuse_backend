@@ -37,7 +37,7 @@ class ShoutcastWrapper:
 
 			print stationList
 
-		except:
+		except Exception as e:
 			print "No artists found OR http request error"
 			stationList = []
 

@@ -8,8 +8,178 @@ class DatabaseWrapper:
 	"""
 	Wrapper for the sqlite database
 	"""
-
 	database = "database/meuse.db"
+
+	def addTags(self, artistsAndTags):
+		"""
+		adds tags to the database. updates tag table
+		and the a2t table
+
+		artistAndTags is a dict where 
+		dict[artist] = list of tags
+		"""
+
+		artistID = 0
+		tagID = 0
+		a2tID = 0
+
+		listOfTags = []
+
+		for artist in artistsAndTags:
+
+			#check if artist exists
+			artistID = self.getArtistID(artist)
+			if (artistID == 0):
+				self.addArtists([artist])
+				artistID = self.getArtistID(artist)
+
+			listOfTags = artistsAndTags[artist]
+
+			for tag in listOfTags:
+				tagID = self.getTagID(tag)
+
+				#if tag does not exist, add to tags
+				if (tagID == 0):
+					self.addTag(tag)
+					tagID = self.getTagID(tag)
+
+				#if a2t entry does not exist, add it
+				if (self.checkIfA2TExists(artistID, tagID) == 0):
+					self.addA2T(artist, tag)
+					a2tID = self.checkIfA2TExists(artistID, tagID)
+
+	def addA2T(self, artist, tag):
+		"""
+		adds an entry to the a2t table
+		"""		
+		con = sqlite3.connect(self.database)
+		artist_key = 1
+
+		artistID = self.getArtistID(artist)
+		tagID = self.getTagID(tag)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("insert \
+				into a2t (artistID, tagID) \
+				values (?, ?)", (artistID, tagID))
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
+	def checkIfA2TExists(self, artistID, tagID):
+		"""
+		checks if an a2t entry exists
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select id from a2t where \
+				tagID=(?) and artistID=(?)", (tagID, artistID))
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
+
+	def addTag(self, tagName):
+		"""
+		inserts a tag into the database
+		"""
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("insert into tags (name) values (?)", [tagName])
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
+	def getTagID(self, tagName):
+		"""
+		returns the ID for a tag, or 0 if it does not
+		exist
+		"""
+		#get artistID and stationID
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select id from tags where name=(?)", [tagName])
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
 
 	def getArtistToStationScore(self, artist, station):
 		"""
@@ -58,7 +228,7 @@ class DatabaseWrapper:
 		artistToStation: a dictionary where artist is mapped
 		to a list of stations
 		"""
-		for artist in artistsAndStation:
+		for artist in artistsAndStations:
 
 			stations = artistsAndStations[artist]
 
@@ -72,8 +242,16 @@ class DatabaseWrapper:
 				#get artist id
 				artistID = self.getArtistID(artist)
 
-				#put station into artistToStation, score is 0
-				self.addArtistToA2S(artistID, stationID, 0)
+				#get current station score
+				score = getArtistToStationScore(artist, station)
+
+				if score == 0:
+					#create new row
+					self.addArtistToA2S(artist, station, 0)
+
+				else:
+					#update row
+					self.updateArtistToA2S(artist, station, score + 1)
 
 	def getStationID(self, station):
 		"""
@@ -145,15 +323,47 @@ class DatabaseWrapper:
 
 			return artistID
 
-	def addArtistToA2S(self, artistID, stationID, score):
+	def updateArtistToA2S(self, artistID, stationID, score):
 		"""
-		adds a station into the artistToStation table
+		updates a row of the artistToStation table with a new
+		score.
 		artistID: id of the artist
 		stationID: id of the 
 		score: score for the relationship
 		"""
 
-		#turn this into an update function
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("update A2S set score=(?) \
+			where artistID = (?) and stationID = (?)", score, artistID, stationID)
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
+	def addArtistToA2S(self, artistID, stationID, score):
+		"""
+		adds a station into the artistToStation table.
+		artistID: id of the artist
+		stationID: id of the 
+		score: score for the relationship
+		"""
 
 		con = sqlite3.connect(self.database)
 
@@ -193,7 +403,7 @@ class DatabaseWrapper:
 			cursor = con.cursor()
 
 			cursor.execute("insert on conflict ignore \
-				into artist(name) \
+				into station(name) \
 				values (?)", station)
 
 		except sqlite3.Error, e:
@@ -296,7 +506,8 @@ class DatabaseWrapper:
 
 			cursor = con.cursor()
 
-			cursor.execute("select name from artist")
+			cursor.execute("select name from artist \
+				order by popularity desc")
 
 			data = cursor.fetchall()
 

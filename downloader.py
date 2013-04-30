@@ -73,6 +73,43 @@ class Downloader:
 
 		print "All entries added to database"
 
+	def download_tags(self):
+		"""
+		downloads all tags relevant to each artist
+		and stores it in the tags table. Adds connections
+		to the a2t table
+		"""
+		lfr = lastfm_wrapper.LastFMWrapper()
+		dbwr = database_wrapper.DatabaseWrapper()
+
+		artistsAndTags = {}
+		counter = 0
+
+		#get list of artists
+		artists = dbwr.getArtists()
+
+		print "There are " + str(len(artists)) + " artists"
+
+		#for each artist, get tags 
+		for artist in artists:
+			artistsAndTags = {}
+
+			counter = counter + 1
+
+			print "Downloading tags for artist " + \
+			str(counter) + ", " + artist
+
+			tags = lfr.getArtistTags(artist)
+
+			artistsAndTags[artist] = tags
+
+			dbwr.addTags(artistsAndTags)
+
+		#dump artist to pickle
+		#pickle.dump(artistsAndTags, open("artistTags.pickle", "wr"))
+
+		#add to a2t, tags
+		#dbwr.addTags(artistsAndTags)
 
 	def download_stations(self):
 		"""
@@ -80,6 +117,10 @@ class Downloader:
 		stations are found by, for each artist, checking
 		the stations playing that artist and adding that
 		station for that artist
+
+		each time this is run, it increments scores for 
+		a station + artist combination by 1 if that stations
+		is playing a song by that artist
 		"""
 		#vars
 		dbwr = database_wrapper.DatabaseWrapper()
@@ -107,15 +148,15 @@ class Downloader:
 
 		print "All stations downloaded, adding to database now"
 
+		pickle.dump(artistsAndStations, open("artists_stations.pickle", "wr+"))
+
 		#add the stations to the database
 		dbwr.addArtistsToStation(artistsAndStations)
-
-		pickle.dump(artistsAndStations, open("artists_stations", "wr+"))
 
 		print "all done!"
 
 def main():
 	downloader = Downloader()
-	downloader.download_stations()
+	downloader.download_tags()
 
 if  __name__ =='__main__':main()
