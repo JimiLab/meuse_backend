@@ -3,12 +3,14 @@ wrapper for shoutcast api
 """
 import urllib2
 import json
+import requests
 
 class ShoutcastWrapper:
 	"""
 	wrapper for accessing the shoutcast api
 	"""
 	rootUrl = "http://api.shoutcast.com/station/"
+	nowPlayingUrl = "http://api.shoutcast.com/station/nowplaying"
 	apiKey = "**api_key**"
 	header = {'User-agent' : 'meuse'}
 
@@ -18,14 +20,25 @@ class ShoutcastWrapper:
 		artist. Each station is a dictionary.
 		"""
 
-		output = []
-		url = self.rootUrl + "nowplaying?ct=" + artist + "&f=json" + "&k=" + self.apiKey
-		req = urllib2.Request(url, None, self.header)
-		html = urllib2.urlopen(req).read()
+		stationDictList = []
+		stationList = []
 
-		jsondata = json.loads(html)
+		args = {"ct" : artist, "f" : "json", "k" : self.apiKey}
 
-		for tag in jsondata['response']['data']['stationlist']['station']:
-			output.append(tag)
+		try:
+			request = requests.get(self.nowPlayingUrl, params=args)
+			data = request.json()
 
-		return output
+			#construct a list with the stations
+			stationDictList = data['response']['data']['stationlist']['station']
+
+			for item in stationDictList:
+				stationList.append(item['name'])
+
+			print stationList
+
+		except:
+			print "No artists found OR http request error"
+			stationList = []
+
+		return stationList

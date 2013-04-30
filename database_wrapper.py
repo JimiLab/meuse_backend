@@ -11,6 +11,45 @@ class DatabaseWrapper:
 
 	database = "database/meuse.db"
 
+	def getArtistToStationScore(self, artist, station):
+		"""
+		gets the score of an artist in the A2S table
+		"""
+		#get artistID and stationID
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		artistID = self.getArtistID(artist)
+		stationID = self.getStationID(station)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select score from a2s where\
+				artistID = (?) and stationID = (?)", (artistID, stationID))
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
+
 	def addArtistsToStation(self, artistsAndStations):
 		"""
 		populates station and artistToStation database. score
@@ -19,7 +58,7 @@ class DatabaseWrapper:
 		artistToStation: a dictionary where artist is mapped
 		to a list of stations
 		"""
-		for artist in artistToStation:
+		for artist in artistsAndStation:
 
 			stations = artistsAndStations[artist]
 
@@ -34,7 +73,7 @@ class DatabaseWrapper:
 				artistID = self.getArtistID(artist)
 
 				#put station into artistToStation, score is 0
-				self.addArtistToStation(artistID, stationID, 0)
+				self.addArtistToA2S(artistID, stationID, 0)
 
 	def getStationID(self, station):
 		"""
@@ -44,17 +83,18 @@ class DatabaseWrapper:
 		con = sqlite3.connect(self.database)
 		data = []
 		output = []
+		stationID = 0
 
 		try:
 
 			cursor = con.cursor()
 
-			cursor.execute("select id from station where name=(?)", station)
+			cursor.execute("select id from station where name=(?)", [station])
 
 			data = cursor.fetchall()
 
 			#turn data from tuples into list of items
-			stationID = data[0]
+			stationID = data[0][0]
 
 		except sqlite3.Error, e:
 
@@ -70,7 +110,7 @@ class DatabaseWrapper:
 
 			return stationID
 
-	def getArtistID(self, station):
+	def getArtistID(self, artist):
 		"""
 		gets the id for the artist passed in
 		station: name of the artist
@@ -78,17 +118,18 @@ class DatabaseWrapper:
 		con = sqlite3.connect(self.database)
 		data = []
 		output = []
+		artistID = 0
 
 		try:
 
 			cursor = con.cursor()
 
-			cursor.execute("select id from artist where name=(?)", station)
+			cursor.execute("select id from artist where name=(?)", [artist])
 
 			data = cursor.fetchall()
 
 			#turn data from tuples into list of items
-			artistID = data[0]
+			artistID = data[0][0]
 
 		except sqlite3.Error, e:
 
@@ -104,15 +145,17 @@ class DatabaseWrapper:
 
 			return artistID
 
-	def addArtistToStation(self, artistID, stationID, score):
+	def addArtistToA2S(self, artistID, stationID, score):
 		"""
 		adds a station into the artistToStation table
 		artistID: id of the artist
 		stationID: id of the 
 		score: score for the relationship
 		"""
+
+		#turn this into an update function
+
 		con = sqlite3.connect(self.database)
-		artist_key = 1
 
 		try:
 
@@ -242,7 +285,8 @@ class DatabaseWrapper:
 
 	def getArtists(self):
 		"""
-		gets the list of artists from the database
+		gets the list of artists from the database in
+		order of popularity
 		"""
 		con = sqlite3.connect(self.database)
 		data = []

@@ -88,13 +88,18 @@ class Downloader:
 
 		artistsAndStations = {}
 
+		counter = 0
+
 		#get all the artists
 		artists = dbwr.getArtists()
 
 		#for each artist, get the set of playing stations
 		for artist in artists:
 
-			print "Downloading stations for artist " + artist
+			counter = counter + 1
+
+			print "Downloading stations for artist " + str(counter) + \
+				" of " + str(len(artists)) + " : " + artist
 
 			stationsForArtist = shr.getStationPlayingArtist(artist)
 
@@ -105,10 +110,12 @@ class Downloader:
 		#add the stations to the database
 		dbwr.addArtistsToStation(artistsAndStations)
 
+		pickle.dump(artistsAndStations, open("artists_stations", "wr+"))
+
 		print "all done!"
 
 def main():
 	downloader = Downloader()
-	downloader.download_artist_popularity()
+	downloader.download_stations()
 
 if  __name__ =='__main__':main()
