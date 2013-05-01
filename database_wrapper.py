@@ -10,6 +10,88 @@ class DatabaseWrapper:
 	"""
 	database = "database/meuse.db"
 
+	def getStationsForArtist(self, artist):
+		"""
+		gets the list of stations which have
+		played the given artist
+
+		artist: the name of the artist
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = []
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select station.name \
+				from station, artist, a2s \
+				where artist.name=(?) \
+				and artist.id = a2s.artistID \
+				and station.id = a2s.stationID", [artist])
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
+	def getArtistsForStation(self, station):
+		"""
+		gets the list of artists who have been 
+		played on the given station
+
+		station: name of the station
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = []
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select artist.name \
+				from station, artist, a2s \
+				where station.name=(?) \
+				and artist.id = a2s.artistID \
+				and station.id = a2s.stationID", [station])
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
 	def addTags(self, artistsAndTags):
 		"""
 		adds tags to the database. updates tag table
@@ -377,7 +459,7 @@ class DatabaseWrapper:
 			cursor = con.cursor()
 
 			cursor.execute("update A2S set score=(?) \
-			where artistID = (?) and stationID = (?)", score, artistID, stationID)
+			where artistID = (?) and stationID = (?)", (score, artistID, stationID))
 
 		except sqlite3.Error, e:
 
