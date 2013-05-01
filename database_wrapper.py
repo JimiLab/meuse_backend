@@ -82,6 +82,41 @@ class DatabaseWrapper:
 
 				con.close()
 
+	def checkIfStationExists(self, station):
+		"""
+		checks if a station exists in the database
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select id from station where \
+				name=(?)", [station])
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
+
 	def checkIfA2TExists(self, artistID, tagID):
 		"""
 		checks if an a2t entry exists
@@ -223,7 +258,7 @@ class DatabaseWrapper:
 	def addArtistsToStation(self, artistsAndStations):
 		"""
 		populates station and artistToStation database. score
-		for each artist is always 0
+		for each artist starts at 0 and is incremented
 
 		artistToStation: a dictionary where artist is mapped
 		to a list of stations
@@ -232,9 +267,12 @@ class DatabaseWrapper:
 
 			stations = artistsAndStations[artist]
 
-			for station in stations:			
-				#put station in to the list
-				self.addStation(station)
+			for station in stations:	
+				
+				#check if station exists
+				if (self.checkIfStationExists(station)==0):
+					#put station in to the list
+					self.addStation(station)
 
 				#get station id
 				stationID = self.getStationID(station)
@@ -243,11 +281,11 @@ class DatabaseWrapper:
 				artistID = self.getArtistID(artist)
 
 				#get current station score
-				score = getArtistToStationScore(artist, station)
+				score = self.getArtistToStationScore(artist, station)
 
 				if score == 0:
 					#create new row
-					self.addArtistToA2S(artist, station, 0)
+					self.addArtistToA2S(artistID, stationID, 0)
 
 				else:
 					#update row
@@ -362,7 +400,7 @@ class DatabaseWrapper:
 		adds a station into the artistToStation table.
 		artistID: id of the artist
 		stationID: id of the 
-		score: score for the relationship
+		score: score
 		"""
 
 		con = sqlite3.connect(self.database)
@@ -371,7 +409,8 @@ class DatabaseWrapper:
 
 			cursor = con.cursor()
 
-			cursor.execute("insert into A2S(artistID, stationID, score) values (?,?,?)", artistID, stationID)
+			cursor.execute("insert into A2S(artistID, stationID, score)\
+			 values (?,?,?)", (artistID, stationID, score))
 
 		except sqlite3.Error, e:
 
@@ -402,9 +441,9 @@ class DatabaseWrapper:
 
 			cursor = con.cursor()
 
-			cursor.execute("insert on conflict ignore \
+			cursor.execute("insert \
 				into station(name) \
-				values (?)", station)
+				values (?)", [station])
 
 		except sqlite3.Error, e:
 

@@ -136,6 +136,7 @@ class Downloader:
 
 		#for each artist, get the set of playing stations
 		for artist in artists:
+			artistsAndStations = {}
 
 			counter = counter + 1
 
@@ -146,17 +147,13 @@ class Downloader:
 
 			artistsAndStations[artist] = stationsForArtist
 
-		print "All stations downloaded, adding to database now"
-
-		pickle.dump(artistsAndStations, open("artists_stations.pickle", "wr+"))
-
-		#add the stations to the database
-		dbwr.addArtistsToStation(artistsAndStations)
+			#add the stations to the database
+			dbwr.addArtistsToStation(artistsAndStations)
 
 		print "all done!"
 
 def main():
 	downloader = Downloader()
-	downloader.download_tags()
+	downloader.download_stations()
 
 if  __name__ =='__main__':main()
