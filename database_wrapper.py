@@ -371,7 +371,7 @@ class DatabaseWrapper:
 
 				else:
 					#update row
-					self.updateArtistToA2S(artist, station, score + 1)
+					self.updateArtistToA2S(artistID, stationID, score + 1)
 
 	def getStationID(self, station):
 		"""
@@ -451,6 +451,8 @@ class DatabaseWrapper:
 		stationID: id of the 
 		score: score for the relationship
 		"""
+		print "score " + str(score) + " artistID " + \
+		str(artistID) + " station ID " + str(stationID)
 
 		con = sqlite3.connect(self.database)
 
