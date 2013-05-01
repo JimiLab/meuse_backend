@@ -285,7 +285,7 @@ class DatabaseWrapper:
 
 				if score == 0:
 					#create new row
-					self.addArtistToA2S(artistID, stationID, 0)
+					self.addArtistToA2S(artistID, stationID, 1)
 
 				else:
 					#update row
