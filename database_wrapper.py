@@ -480,13 +480,17 @@ class DatabaseWrapper:
 
 	def updateStationPopularity(self, station, newPopularity):
 		"""
-		updates the popularity of a station
+		updates the popularity of a station as follows
+
+		popularity = (currentPop + oldPop) / 2 
 
 		parameters
 		----------
 		station: name of the station
 		newPopularity: popularity of the station	
 		"""
+
+		
 
 		con = sqlite3.connect(self.database)
 
