@@ -490,7 +490,7 @@ class DatabaseWrapper:
 		newPopularity: popularity of the station	
 		"""
 
-		
+
 
 		con = sqlite3.connect(self.database)
 
@@ -498,7 +498,8 @@ class DatabaseWrapper:
 
 			cursor = con.cursor()
 
-			cursor.execute("update station set popularity=(?) \
+			cursor.execute("update station set \
+				popularity=((station.popularity + (?))/2) \
 			where name = (?)", 
 			(newPopularity, station))
 
