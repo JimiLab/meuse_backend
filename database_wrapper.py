@@ -496,7 +496,7 @@ class DatabaseWrapper:
 
 			cursor.execute("update station set popularity=(?) \
 			where name = (?)", 
-			(popularity, [station]))
+			(newPopularity, station))
 
 		except sqlite3.Error, e:
 
@@ -600,8 +600,8 @@ class DatabaseWrapper:
 			cursor = con.cursor()
 
 			cursor.execute("insert \
-				into station(name, popularity) \
-				values (?, ?)", ([station], popularity))
+				into station (name, popularity) \
+				values (?, ?)", (station, popularity))
 
 		except sqlite3.Error, e:
 
