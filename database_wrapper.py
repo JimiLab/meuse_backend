@@ -368,19 +368,28 @@ class DatabaseWrapper:
 		populates station and artistToStation database. score
 		for each artist starts at 0 and is incremented
 
+		parameters
+		----------
 		artistToStation: a dictionary where artist is mapped
-		to a list of stations
+		to a list of (station, listencount)
 		"""
 		for artist in artistsAndStations:
 
 			stations = artistsAndStations[artist]
 
-			for station in stations:	
+			for stationTuple in stations:
+
+				station = stationTuple[0]	
+				popularity = stationTuple[1]
 				
 				#check if station exists
 				if (self.checkIfStationExists(station)==0):
 					#put station in to the list
-					self.addStation(station)
+					self.addStation(station, popularity)
+
+				#otherwise, update the station popularity
+			else:
+				self.updateStationPopularity(station, popularity)
 
 				#get station id
 				stationID = self.getStationID(station)
@@ -469,6 +478,42 @@ class DatabaseWrapper:
 
 			return artistID
 
+	def updateStationPopularity(self, station, newPopularity):
+		"""
+		updates the popularity of a station
+
+		parameters
+		----------
+		station: name of the station
+		newPopularity: popularity of the station	
+		"""
+
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("update station set popularity=(?) \
+			where name = (?)", 
+			(popularity, [station]))
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
 	def updateArtistToA2S(self, artistID, stationID, score):
 		"""
 		updates a row of the artistToStation table with a new
@@ -538,11 +583,14 @@ class DatabaseWrapper:
 
 				con.close()
 
-	def addStation(self, station):
+	def addStation(self, station, popularity):
 		"""
 		adds a station into the database. Turns into an update if it exists
 
+		parameters
+		----------
 		station: the name of the station
+		popularity: the listen count of the station
 		"""
 		con = sqlite3.connect(self.database)
 		artist_key = 1
@@ -552,8 +600,8 @@ class DatabaseWrapper:
 			cursor = con.cursor()
 
 			cursor.execute("insert \
-				into station(name) \
-				values (?)", [station])
+				into station(name, popularity) \
+				values (?, ?)", ([station], popularity))
 
 		except sqlite3.Error, e:
 
