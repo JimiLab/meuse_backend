@@ -18,6 +18,14 @@ class ShoutcastWrapper:
 		"""
 		returns a list of shoutcast stations playing the given
 		artist. Each station is a dictionary.
+
+		parameters
+		----------
+		artist: the name of an artist
+
+		return
+		------
+		a list of tuples (station name, listen count)
 		"""
 
 		stationDictList = []
@@ -33,9 +41,8 @@ class ShoutcastWrapper:
 			stationDictList = data['response']['data']['stationlist']['station']
 
 			for item in stationDictList:
-				stationList.append(item['name'])
+				stationList.append((item['name'], item['lc']))
 
-			print stationList
 
 		except Exception as e:
 			print "No artists found OR http request error"
