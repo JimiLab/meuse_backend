@@ -388,8 +388,8 @@ class DatabaseWrapper:
 					self.addStation(station, popularity)
 
 				#otherwise, update the station popularity
-			else:
-				self.updateStationPopularity(station, popularity)
+				else:
+					self.updateStationPopularity(station, popularity)
 
 				#get station id
 				stationID = self.getStationID(station)
