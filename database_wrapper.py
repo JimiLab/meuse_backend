@@ -10,6 +10,32 @@ class DatabaseWrapper:
 	"""
 	database = "database/meuse.db"
 
+	def getStationSetForArtist(self, artist):
+		"""
+		gets a dataset for clustering for a given
+		artist. The dataset is as follows:
+
+		"labels" = list of stations for each set
+		"data" = list of artist for each station
+		"""
+		dataset = {"labels" : [], "data" : []}
+		artists = ""
+		stations = self.getStationsForArtist(artist)
+
+		for station in stations:
+
+			#get data from dataset and convert into a long string
+			artistsForStation = self.getArtistsForStation(station)
+
+			for artist in artistsForStation:
+
+				artists = artists + " " + artist
+
+			dataset["data"].append(artists)
+			dataset["labels"].append(station)
+
+		return dataset
+
 	def getStationsForArtist(self, artist):
 		"""
 		gets the list of stations which have
@@ -615,6 +641,40 @@ class DatabaseWrapper:
 				con.commit()
 
 				con.close()
+
+	def getStations(self):
+		"""
+		gets the list of stations from the database
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = []
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select name from station")
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
 
 	def getArtists(self):
 		"""
