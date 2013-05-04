@@ -37,6 +37,38 @@ class LastFMWrapper:
 
 			return output
 
+	def getSimilarArtists(self, artist):
+		"""
+		gets the similar artist for the given artist; returns a 
+		list of tuples, where artist is mapped to score
+
+		parameters
+		----------
+		artist - name of the artist
+		"""
+		output = []
+		jsondata = []
+
+		args = {"method" : "artist.getsimilar", 
+		"artist" : artist, "api_key" : self.apiKey,
+		"format" : "json"}
+
+		try:
+			data = requests.get(self.rootUrl, params=args)
+		
+			jsondata = json.loads(data.text)
+
+			jsondata = jsondata['similarartists']['artist']
+
+			for tag in jsondata:
+				output.append(((tag['name']), float(tag['match'])))
+
+		except:
+			"print json value error!"
+
+		finally:
+			return output
+
 	def getArtistTags(self, artist):
 		"""
 		gets the tags for the given artist; returns a list

@@ -238,6 +238,91 @@ class DatabaseWrapper:
 
 			return output
 
+	def checkIfArtistExists(self, artist):
+		"""
+		checks if the given artist exists
+
+		parameters
+		----------
+		artist: name of the artist
+
+		return
+		------
+		0 if there are no artists with the name
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select id from artist \
+				where name=(?)", [artist])
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
+	def checkIfA2AExists(self, artistID, simartistID):
+		"""
+		checks if an a2A entry exists
+
+		parameters
+		----------
+		artistID - id of the artist
+		simartistID - id of the similar artist
+
+		returns
+		-------
+		0 if the a2a entry does not exist, or the score
+		if it does
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = 0
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select id from a2a where \
+				artist1ID=(?) and artist2ID=(?)", (artistID, simartistID))
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			output = data[0][0]
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
 
 	def checkIfA2TExists(self, artistID, tagID):
 		"""
@@ -533,6 +618,83 @@ class DatabaseWrapper:
 
 				con.close()
 
+	def updateArtistPopularity(self, artist, newPopularity):
+		"""
+		updates the popularity of an artist as follows
+
+		popularity = (currentPop + oldPop) / 2 
+
+		parameters
+		----------
+		artist: name of the artist
+		newPopularity: popularity of the station	
+		"""
+
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("update artist set \
+				popularity=((artist.popularity + (?))/2) \
+			where name = (?)", 
+			(newPopularity, artist))
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
+	def updateA2A(self, artist1ID, artist2ID, score):
+		"""
+		updates a row of the artistToStation table with a new
+		score.
+
+		parameters
+		----------
+		artist1ID: id of the artist
+		artist2ID: id of the similar artist
+		score: new score for the relationship
+		"""
+
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("update A2A set popularity=(?) \
+			where artist1ID = (?) and artist2ID = (?)",
+			(score, artist1ID, artist2ID))
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
 	def updateArtistToA2S(self, artistID, stationID, score):
 		"""
 		updates a row of the artistToStation table with a new
@@ -552,6 +714,42 @@ class DatabaseWrapper:
 
 			cursor.execute("update A2S set score=(?) \
 			where artistID = (?) and stationID = (?)", (score, artistID, stationID))
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
+
+	def addArtistToA2A(self, artist1ID, artist2ID, score):
+		"""
+		adds a station into the artistToStation table.
+
+		parameters
+		----------
+		artist1ID: id of the artist
+		artist2ID: id of the similar artist
+		score: score
+		"""
+
+		con = sqlite3.connect(self.database)
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("insert into A2A(artist1ID, artist2ID, popularity)\
+			 values (?,?,?)", (artist1ID, artist2ID, score))
 
 		except sqlite3.Error, e:
 
@@ -677,6 +875,39 @@ class DatabaseWrapper:
 
 				con.close()
 
+
+	def addArtist(self, artist):
+		"""
+		adds the artist into the database
+
+		parameters
+		----------
+		artist: name of the artist
+		"""
+		con = sqlite3.connect(self.database)
+		artist_key = 1
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("insert into artist(name) values (?)", [artist])
+
+		except sqlite3.Error, e:
+
+			if con: con.rollback()
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.commit()
+
+				con.close()
 
 	def addArtists(self, artists):
 		"""

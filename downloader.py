@@ -13,6 +13,57 @@ class Downloader:
 	the web api wrappers and the database wrapper
 	"""
 
+	def download_similar_artists(self):
+		"""
+		for each of the artists in the database
+		downloads all the similar artists
+		and adds entries in a2a database
+		"""
+		lfr = lastfm_wrapper.LastFMWrapper()
+		dbwr = database_wrapper.DatabaseWrapper()
+
+		artistSet = dbwr.getArtists()
+		similarArtistSet = []
+
+		artistID = 0
+		similarArtistID = 0
+		similarArtistName = ""
+		similarArtistScore = 0.0
+		count = 0
+
+		for artist in artistSet:
+			count = count + 1
+
+			print "Adding similar artists for " + artist + ", artist " \
+			+ str(count) + " of " + str(len(artistSet))
+
+			artistID = dbwr.getArtistID(artist)
+
+			#download the similar artist set
+			similarArtistSet = lfr.getSimilarArtists(artist)
+
+			for similarArtist in similarArtistSet:
+				print similarArtist
+
+				#add each similar artist to the database
+
+				similarArtistName = similarArtist[0]
+				similarArtistScore = similarArtist[1]
+
+				if (dbwr.checkIfArtistExists(similarArtistName) == 0):
+					#if artist does not exist, add him/her
+					dbwr.addArtist(similarArtistName)
+
+				similarArtistID = dbwr.getArtistID(similarArtistName)
+
+				#check to see if the a2a entry exists
+				if (dbwr.checkIfA2AExists(artistID, similarArtistID)==0):
+					dbwr.addArtistToA2A(artistID, similarArtistID, similarArtistScore)
+
+				else:
+					dbwr.updateA2A(artistID, similarArtistID, similarArtistScore)
+
+
 	def download_artists():
 		#get the set of artists twice
 		artists = []
@@ -37,11 +88,12 @@ class Downloader:
 
 		print "Artists succesfully added to database"
 
-	def download_artist_popularity(self):
+	def update_artist_popularity(self):
 		"""
-		downloads the listen count for each artist
-		from last.fm and adds log listen count into 
-		the popularity field in the database
+		updates the artist popularity. 
+		popularity is a moving average 
+
+		popularity = (old popularity + new popularity)/2
 		"""
 		lfr = lastfm_wrapper.LastFMWrapper()
 		dbwr = database_wrapper.DatabaseWrapper()
@@ -62,14 +114,7 @@ class Downloader:
 			#get popularity
 			popularity = lfr.getLogListenCount(artist)
 
-			artistDict[artist] = popularity
-
-		print str(len(artistDict)) + " popularity scores downloaded"
-		print "Adding to database now"
-
-		pickle.dump(artists, open("artistPop", "wr+"))
-
-		dbwr.addArtistPopularity(artistDict)
+			dbwr.updateArtistPopularity(artist, popularity)
 
 		print "All entries added to database"
 
@@ -154,6 +199,6 @@ class Downloader:
 
 def main():
 	downloader = Downloader()
-	downloader.download_stations()
+	downloader.download_similar_artists()
 
 if  __name__ =='__main__':main()
