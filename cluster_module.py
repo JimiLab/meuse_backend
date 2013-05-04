@@ -3,7 +3,8 @@ conducts the clustering function using scikit-learn
 """
 
 from database_wrapper import DatabaseWrapper
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction import FeatureHasher
 from sklearn.cluster import KMeans
 
 class ClusterModule:
@@ -27,12 +28,13 @@ class ClusterModule:
 		list of station names
 		"""
 		output = []
-		counter = CountVectorizer()
+		hasher = FeatureHasher(input_type="string")
 		transformer = TfidfTransformer()
 		km = KMeans(n_clusters=self.numberOfClusters, init='k-means++',
-			max_iter=100, n_init=1, verbose=0)
+			max_iter=10, n_init=1, verbose=0)
 
-		datacounts = counter.fit_transform(dataset['data'])
+		#datacounts = counter.fit_transform(dataset['data'])
+		datacounts = hasher.fit_transform(dataset['data'])
 		tfidfcounts = transformer.fit_transform(datacounts)
 
 		km.fit(tfidfcounts)

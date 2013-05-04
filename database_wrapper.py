@@ -12,24 +12,37 @@ class DatabaseWrapper:
 
 	def getStationSetForArtist(self, artist):
 		"""
+		***TOO SLOW***
+
 		gets a dataset for clustering for a given
 		artist. The dataset is as follows:
 
+		parameters
+		----------
+		artist - the artist whose stations to return
+
+		returns
+		-------
+		dictionary of all the stations for the artists
+		passed in. 
+
 		"labels" = list of stations for each set
 		"data" = list of artist for each station
+
 		"""
 		dataset = {"labels" : [], "data" : []}
-		artists = ""
+		artists = []
 		stations = self.getStationsForArtist(artist)
 
 		for station in stations:
+			artists = []
 
 			#get data from dataset and convert into a long string
 			artistsForStation = self.getArtistsForStation(station)
 
 			for artist in artistsForStation:
 
-				artists = artists + " " + artist
+				artists.append(artist)
 
 			dataset["data"].append(artists)
 			dataset["labels"].append(station)
@@ -55,7 +68,8 @@ class DatabaseWrapper:
 				from station, artist, a2s \
 				where artist.name=(?) \
 				and artist.id = a2s.artistID \
-				and station.id = a2s.stationID", [artist])
+				and station.id = a2s.stationID \
+				order by station.popularity", [artist])
 
 			data = cursor.fetchall()
 
