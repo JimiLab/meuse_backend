@@ -974,6 +974,42 @@ class DatabaseWrapper:
 
 			return output
 
+	def getArtistsInDescendingOrder(self):
+		"""
+		gets the list of artists from the database in
+		reverse order of popularity
+		"""
+		con = sqlite3.connect(self.database)
+		data = []
+		output = []
+
+		try:
+
+			cursor = con.cursor()
+
+			cursor.execute("select name from artist \
+				order by popularity")
+
+			data = cursor.fetchall()
+
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])
+
+		except sqlite3.Error, e:
+
+			print "Error!"
+
+			print "Error %s:" % e.args[0]
+
+		finally:
+
+			if con:
+
+				con.close()
+
+			return output
+
 	def getArtists(self):
 		"""
 		gets the list of artists from the database in

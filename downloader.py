@@ -22,7 +22,7 @@ class Downloader:
 		lfr = lastfm_wrapper.LastFMWrapper()
 		dbwr = database_wrapper.DatabaseWrapper()
 
-		artistSet = dbwr.getArtists()
+		artistSet = dbwr.getArtistsInDescendingOrder()
 		similarArtistSet = []
 
 		artistID = 0
