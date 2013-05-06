@@ -50,18 +50,16 @@ class Downloader:
 				similarArtistName = similarArtist[0]
 				similarArtistScore = similarArtist[1]
 
-				if (dbwr.checkIfArtistExists(similarArtistName) == 0):
-					#if artist does not exist, add him/her
-					dbwr.addArtist(similarArtistName)
+				if (dbwr.checkIfArtistExists(similarArtistName) != 0):
+					#add artist details ONLY if it exists.
+					similarArtistID = dbwr.getArtistID(similarArtistName)
 
-				similarArtistID = dbwr.getArtistID(similarArtistName)
+					#check to see if the a2a entry exists
+					if (dbwr.checkIfA2AExists(artistID, similarArtistID)==0):
+						dbwr.addArtistToA2A(artistID, similarArtistID, similarArtistScore)
 
-				#check to see if the a2a entry exists
-				if (dbwr.checkIfA2AExists(artistID, similarArtistID)==0):
-					dbwr.addArtistToA2A(artistID, similarArtistID, similarArtistScore)
-
-				else:
-					dbwr.updateA2A(artistID, similarArtistID, similarArtistScore)
+					else:
+						dbwr.updateA2A(artistID, similarArtistID, similarArtistScore)
 
 
 	def download_artists():
@@ -199,6 +197,6 @@ class Downloader:
 
 def main():
 	downloader = Downloader()
-	downloader.download_similar_artists()
+	downloader.download_artists()
 
 if  __name__ =='__main__':main()
