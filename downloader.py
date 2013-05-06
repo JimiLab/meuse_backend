@@ -62,7 +62,7 @@ class Downloader:
 						dbwr.updateA2A(artistID, similarArtistID, similarArtistScore)
 
 
-	def download_artists():
+	def download_artists(self):
 		#get the set of artists twice
 		artists = []
 
