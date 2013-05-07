@@ -197,6 +197,6 @@ class Downloader:
 
 def main():
 	downloader = Downloader()
-	downloader.download_similar_artists()
+	downloader.update_artist_popularity()
 
 if  __name__ =='__main__':main()
