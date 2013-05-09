@@ -3,12 +3,39 @@ A wrapper for the sqlite database
 """
 
 import sqlite3
+import MySQLdb as mdb
+import sys
 
 class DatabaseWrapper:
 	"""
 	Wrapper for the sqlite database
 	"""
 	database = "database/meuse.db"
+
+	username = "cs205user"
+	password = "ithaca"
+	database = "meuse2"
+
+	con = None
+	cur = None
+
+	def connect(self):
+		"""
+		connects to the mysql database
+		"""
+		try:
+			self.con = mdb.connect("localhost", self.username, self.password, self.database)
+			self.cur = self.con.cursor()
+
+		except _mysql.Error, e:
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+	def disconnect(self):
+		"""	
+		disconnects from database
+		"""	
+		if (self.con):
+			self.con.close()
 
 	def getStationSetForArtist(self, artist):
 		"""
@@ -943,34 +970,31 @@ class DatabaseWrapper:
 	def getStations(self):
 		"""
 		gets the list of stations from the database
+
+		returns
+		-------
+		the list of stations in the database
 		"""
-		con = sqlite3.connect(self.database)
 		data = []
 		output = []
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select name from station")
-
-			data = cursor.fetchall()
-
+			self.cur.execute("select name from station")
+	
+			data = self.cur.fetchall()
 			#turn data from tuples into list of items
 			for item in data:
-				output.append(item[0])
-
-		except sqlite3.Error, e:
-
+				output.append(item[0])		
+	
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
 
@@ -979,18 +1003,16 @@ class DatabaseWrapper:
 		gets the list of artists from the database in
 		reverse order of popularity
 		"""
-		con = sqlite3.connect(self.database)
 		data = []
 		output = []
 
 		try:
 
-			cursor = con.cursor()
-
-			cursor.execute("select name from artist \
+			self.connect()
+			self.cur.execute("select name from artist \
 				order by popularity")
 
-			data = cursor.fetchall()
+			data = self.cur.fetchall()
 
 			#turn data from tuples into list of items
 			for item in data:
@@ -1003,10 +1025,7 @@ class DatabaseWrapper:
 			print "Error %s:" % e.args[0]
 
 		finally:
-
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
 
@@ -1014,69 +1033,32 @@ class DatabaseWrapper:
 		"""
 		gets the list of artists from the database in
 		order of popularity
+
+		returns
+		-------
+		list of artists in the database, in order of popularity
 		"""
-		con = sqlite3.connect(self.database)
 		data = []
 		output = []
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select name from artist \
+			self.cur.execute("select name from artist \
 				order by popularity desc")
-
-			data = cursor.fetchall()
-
+	
+			data = self.cur.fetchall()
 			#turn data from tuples into list of items
 			for item in data:
-				output.append(item[0])
-
-		except sqlite3.Error, e:
-
+				output.append(item[0])		
+	
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
 
-	def executeStatement(self, statement):
-		"""
-		executes the passed in SQL statement and returns the 
-		result
-		"""
-		con = sqlite3.connect(self.database)
-		data = []
-		output = []
-
-		try:
-
-			cursor = con.cursor()
-
-			cursor.execute(statement)
-
-			data = cursor.fetchall()
-
-			#turn data from tuples into list of items
-			for item in data:
-				output.append(item[0])
-
-		except sqlite3.Error, e:
-
-			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
-		finally:
-
-			if con:
-
-				con.close()
-
-			return output
