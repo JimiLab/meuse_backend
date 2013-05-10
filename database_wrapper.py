@@ -180,7 +180,7 @@ class DatabaseWrapper:
 
 				#if a2t entry does not exist, add it
 				if (self.checkIfA2TExists(artistID, tagID) == 0):
-					self.addA2T(artist, tag)
+					self.addA2T(artistID, tagID)
 					a2tID = self.checkIfA2TExists(artistID, tagID)
 
 
@@ -343,12 +343,11 @@ class DatabaseWrapper:
 		try:
 			self.connect()
 
-			self.cur.execute("insert into tags(id, name) \
+			self.cur.execute("insert into tags(id, name, isactive) \
 			values (DEFAULT, %s, FALSE)",tagName)
 
-		except mdb.Error, e: 
+		except (mdb.Error, UnicodeEncodeError) , e: 
 			print "Error!"
-			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
@@ -379,12 +378,12 @@ class DatabaseWrapper:
 
 		except _mysql.Error, e: 
 			print "Error!"
-			print "Error %d: %s" % (e.args[0], e.args[1])
+			print "Error %s: %s" % (e.args[0], e.args[1])
 	
 		finally:
 
 			self.disconnect()
-			if output == None
+			if output == None:
 				return 0
 			return output
 
@@ -414,7 +413,7 @@ class DatabaseWrapper:
 
 		except _mysql.Error, e: 
 			print "Error!"
-			print "Error %d: %s" % (e.args[0], e.args[1])
+			print "Error %s: %s" % (e.args[0], e.args[1])
 	
 		finally:
 
@@ -648,8 +647,8 @@ class DatabaseWrapper:
 			self.connect()
 			
 			self.cur.execute("insert into A2T \
-			(artistID, tagID) \
-			values (%s, %s)", (artistID, tagID))
+			(id, artistID, tagID, score) \
+			values (DEFAULT, %s, %s, 0)", (artistID, tagID))
 
 		except mdb.Error, e: 
 			print "Error!"
