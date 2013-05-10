@@ -193,7 +193,7 @@ class DatabaseWrapper:
 		listOfTags = []
 
 		for artist in artistsAndTags:
-
+			
 			#check if artist exists
 			artistID = self.getArtistID(artist)
 			if (artistID == 0):
@@ -203,18 +203,23 @@ class DatabaseWrapper:
 			listOfTags = artistsAndTags[artist]
 
 			for tag in listOfTags:
-				tagID = self.getTagID(tag)
+				tagName = tag[0]
+				tagScore = tag[1]
+
+				tagID = self.getTagID(tagName)
 
 				#if tag does not exist, add to tags
 				if (tagID == 0):
-					self.addTag(tag)
-					tagID = self.getTagID(tag)
+					self.addTag(tagName)
+					tagID = self.getTagID(tagName)
+				
+				#add the tag score
+				self.updateTagPopularity(tagID, tagScore)
 
 				#if a2t entry does not exist, add it
 				if (self.checkIfA2TExists(artistID, tagID) == 0):
 					self.addA2T(artistID, tagID)
 					a2tID = self.checkIfA2TExists(artistID, tagID)
-
 
 	def checkIfStationExists(self, lastfmid):
 		"""
@@ -560,6 +565,34 @@ class DatabaseWrapper:
 			if output == None:
 				return 0
 			return output
+
+	def updateTagPopularity(self, tagID, newPopularity):
+		"""
+		updates the popularity of a tag as follows
+
+		popularity = (currentPop + oldPop) / 2 
+
+		parameters
+		----------
+		tag: name of the tag
+		newPopularity: popularity of the tag	
+		"""
+
+		try:
+			self.connect()
+			
+			self.cur.execute("update tags \
+			set popularity = ((tags.popularity + %s)/2) \
+			where id = %s",
+			(newPopularity, station))
+
+		except mdb.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0],e.args[1])
+
+		finally:
+			self.disconnect()
+
 
 	def updateStationPopularity(self, station, newPopularity):
 		"""

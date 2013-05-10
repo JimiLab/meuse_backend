@@ -88,7 +88,7 @@ class LastFMWrapper:
 			jsondata = jsondata['toptags']['tag']
 
 			for tag in jsondata:
-				output.append(tag['name'])
+				output.append((tag['name'], tag['count']))
 
 		except:
 			"print json value error!"
