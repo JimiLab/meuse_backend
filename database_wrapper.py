@@ -939,33 +939,26 @@ class DatabaseWrapper:
 	def addArtists(self, artists):
 		"""
 		adds a list of artists into the database
+		inits popularity at 0
+
+		parameters
+		----------
+		artists: a list of artists
 		"""
-		con = sqlite3.connect(self.database)
-		artist_key = 1
-
 		try:
-
-			cursor = con.cursor()
+			self.connect()
 
 			for artist in artists:
-
-				cursor.execute("insert into artist(name) values (?)", [artist])
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+				self.cur.execute("insert into artist(id, name, popularity) \
+				values (DEFAULT, %s, 0)",artist)
+	
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def getStations(self):
 		"""
@@ -1018,11 +1011,9 @@ class DatabaseWrapper:
 			for item in data:
 				output.append(item[0])
 
-		except sqlite3.Error, e:
+		except:
 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
 
 		finally:
 			self.disconnect()
@@ -1052,9 +1043,8 @@ class DatabaseWrapper:
 			for item in data:
 				output.append(item[0])		
 	
-		except _mysql.Error, e: 
+		except: 
 			print "Error!"
-			print "Error %d: %s" % (e.args[0], e.args[1])
 	
 		finally:
 
