@@ -213,14 +213,11 @@ class DatabaseWrapper:
 					self.addTag(tagName)
 					tagID = self.getTagID(tagName)
 				
-				#add the tag score
-				self.updateTagPopularity(tagID, tagScore)
-
 				#if a2t entry does not exist, add it
 				if (self.checkIfA2TExists(artistID, tagID) == 0):
-					self.addA2T(artistID, tagID)
-					a2tID = self.checkIfA2TExists(artistID, tagID)
-
+					self.addA2T(artistID, tagID, tagScore)
+				else:
+					self.updateA2T(artistID, tagID, tagScore)
 	def checkIfStationExists(self, lastfmid):
 		"""
 		checks if a station exists in the database
@@ -583,8 +580,7 @@ class DatabaseWrapper:
 			
 			self.cur.execute("update tags \
 			set popularity = ((tags.popularity + %s)/2) \
-			where id = %s",
-			(newPopularity, station))
+			where id = %s",(newPopularity, tagID))
 
 		except mdb.Error, e: 
 			print "Error!"
@@ -613,6 +609,33 @@ class DatabaseWrapper:
 			set popularity = ((station.popularity + %s)/2) \
 			where name = %s",
 			(newPopularity, station))
+
+		except mdb.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0],e.args[1])
+
+		finally:
+			self.disconnect()
+
+	def updateA2T(self, artistID, tagID, score):
+		"""
+		Updates the score of a tag as follows
+
+		popularity = (currentPop + oldPop) / 2 
+
+		parameters
+		----------
+		artistID: id of the artist
+		tagID: id of the tag
+		score: score for the tag
+		"""
+		try:
+			self.connect()
+			
+			self.cur.execute("update A2T \
+			set score = ((a2t.score + %s) / 2) \
+			where artistID = %s and tagID =%s",
+			(score, artistID, tagID))
 
 		except mdb.Error, e: 
 			print "Error!"
@@ -699,7 +722,7 @@ class DatabaseWrapper:
 		finally:
 			self.disconnect()
 
-	def addA2T(self, artistID, tagID):
+	def addA2T(self, artistID, tagID, score):
 		"""
 		adds an entry to the a2t table
 
@@ -707,13 +730,14 @@ class DatabaseWrapper:
 		----------
 		artist: id of the artist
 		tag: id of the tag
+		score: score for the tag
 		"""		
 		try:
 			self.connect()
 			
 			self.cur.execute("insert into A2T \
 			(id, artistID, tagID, score) \
-			values (DEFAULT, %s, %s, 0)", (artistID, tagID))
+			values (DEFAULT, %s, %s, %s)", (artistID, tagID, score))
 
 		except mdb.Error, e: 
 			print "Error!"
