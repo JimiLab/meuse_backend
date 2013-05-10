@@ -76,6 +76,38 @@ class DatabaseWrapper:
 
 		return dataset
 
+	def getTagsForArtist(self, artist):
+		"""
+		gets the list of top tags for the artist
+
+		artist: the name of the artist
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+			self.cur.execute("select tags.name \
+				from artist, tags, a2t \
+				where artist.name=%s and\
+				tags.id = a2t.tagid and\
+				artist.id = a2t.artistid", artist)
+		
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])		
+			
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+
+			return output
+
 	def getStationsForArtist(self, artist):
 		"""
 		gets the list of stations which have

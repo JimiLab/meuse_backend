@@ -35,10 +35,12 @@ class ClusterModule:
 
 		#datacounts = counter.fit_transform(dataset['data'])
 		datacounts = hasher.fit_transform(dataset['data'])
-		tfidfcounts = transformer.fit_transform(datacounts)
-
-		km.fit(tfidfcounts)
-
+		#tfidfcounts = transformer.fit_transform(datacounts)
+		
+		#disabled tf-idf because too slow
+		#km.fit(tfidfcounts)
+		km.fit(datacounts)
+		
 		labeleddata = km.labels_
 
 		#init output array
