@@ -695,68 +695,46 @@ class DatabaseWrapper:
 		artist2ID: id of the similar artist
 		score: new score for the relationship
 		"""
-
-		con = sqlite3.connect(self.database)
-
 		try:
-
-			cursor = con.cursor()
-
-			cursor.execute("update A2A set popularity=(?) \
-			where artist1ID = (?) and artist2ID = (?)",
+			self.connect()
+			
+			self.cur.execute("update a2a \
+			set score = %s \
+			where artist1ID = %s and artist2ID = %s",
 			(score, artist1ID, artist2ID))
 
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
-
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def updateArtistToA2S(self, artistID, stationID, score):
 		"""
 		updates a row of the artistToStation table with a new
 		score.
+
+		parameters
+		----------
 		artistID: id of the artist
 		stationID: id of the 
 		score: score for the relationship
 		"""
-		print "score " + str(score) + " artistID " + \
-		str(artistID) + " station ID " + str(stationID)
-
-		con = sqlite3.connect(self.database)
-
 		try:
+			self.connect()
+			
+			self.cur.execute("update a2s \
+			set score = %s \
+			where artistID = %s and stationID = %s",
+			(score, artistID, stationID))
 
-			cursor = con.cursor()
-
-			cursor.execute("update A2S set score=(?) \
-			where artistID = (?) and stationID = (?)", (score, artistID, stationID))
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
-
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def addArtistToA2A(self, artist1ID, artist2ID, score):
 		"""
@@ -768,31 +746,20 @@ class DatabaseWrapper:
 		artist2ID: id of the similar artist
 		score: score
 		"""
-
-		con = sqlite3.connect(self.database)
-
 		try:
+			self.connect()
+			
+			self.cur.execute("insert into a2a \
+			(artist1ID, artist2ID, score) \
+			values (%s, %s, %s)", (artist1ID, artist2ID, score))
 
-			cursor = con.cursor()
-
-			cursor.execute("insert into A2A(artist1ID, artist2ID, popularity)\
-			 values (?,?,?)", (artist1ID, artist2ID, score))
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def addArtistToA2S(self, artistID, stationID, score):
 		"""
@@ -801,31 +768,20 @@ class DatabaseWrapper:
 		stationID: id of the 
 		score: score
 		"""
-
-		con = sqlite3.connect(self.database)
-
 		try:
+			self.connect()
+			
+			self.cur.execute("insert into a2s \
+			(artistID, stationID, score) \
+			values (%s, %s, %s)", (artistID, stationID, score))
 
-			cursor = con.cursor()
-
-			cursor.execute("insert into A2S(artistID, stationID, score)\
-			 values (?,?,?)", (artistID, stationID, score))
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def addStation(self, station, popularity):
 		"""
