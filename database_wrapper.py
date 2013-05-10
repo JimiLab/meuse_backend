@@ -90,7 +90,7 @@ class DatabaseWrapper:
 			self.connect()
 			cursor.execute("select station.name \
 				from station, artist, a2s \
-				where artist.name=(?) \
+				where artist.name='%s' \
 				and artist.id = a2s.artistID \
 				and station.id = a2s.stationID \
 				order by station.popularity", artist)
@@ -99,7 +99,9 @@ class DatabaseWrapper:
 			#turn data from tuples into list of items
 			for item in data:
 				output.append(item[0])		
-	
+			
+			print "test"
+
 		except _mysql.Error, e: 
 			print "Error!"
 			print "Error %d: %s" % (e.args[0], e.args[1])
@@ -126,7 +128,7 @@ class DatabaseWrapper:
 			self.connect()
 			self.cur.execute("select artist.name \
 				from station, artist, a2s \
-				where station.name=(?) \
+				where station.name=%s \
 				and artist.id = a2s.artistID \
 				and station.id = a2s.stationID", station)
 	
