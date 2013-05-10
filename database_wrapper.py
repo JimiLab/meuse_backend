@@ -836,33 +836,20 @@ class DatabaseWrapper:
 		station: the name of the station
 		popularity: the listen count of the station
 		"""
-		con = sqlite3.connect(self.database)
-		artist_key = 1
-
 		try:
+			self.connect()
 
-			cursor = con.cursor()
+			self.cur.execute("insert into station(id, name, popularity) \
+			values (DEFAULT, %s, %s)",(station, popularity))
 
-			cursor.execute("insert \
-				into station (name, popularity) \
-				values (?, ?)", (station, popularity))
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
-
-				con.commit()
-
-				con.close()
-
+			self.disconnect()
+	
 	def addArtistPopularity(self, artists):
 		"""
 		adds the popularity of each artist into the 
