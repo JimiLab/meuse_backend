@@ -867,41 +867,27 @@ class DatabaseWrapper:
 		"""
 		adds the popularity of each artist into the 
 		database.
-
+		
+		parameters
+		----------
 		artists: a dictionary where artists is mapped
 		to popularity.
 		"""
-		con = sqlite3.connect(self.database)
-		artist_key = 1
+		for artist in artists:
 
-		try:
+			try:
+				self.connect()
 
-			cursor = con.cursor()
+				self.cur.execute("update artist set popularity = (%s) \
+				where name = (%s)", (artists[artist], artist))
 
-			for artist in artists:
+			except mdb.Error, e: 
+				print "Error!"
+				print "Error %d: %s" % (e.args[0],e.args[1])
 
-				popularity = artists[artist]
+			finally:
 
-				cursor.execute("update artist \
-					set popularity = (?) \
-					where name = (?)", (popularity, artist))
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
-			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
-		finally:
-
-			if con:
-
-				con.commit()
-
-				con.close()
-
+				self.disconnect()
 
 	def addArtist(self, artist):
 		"""
@@ -911,30 +897,19 @@ class DatabaseWrapper:
 		----------
 		artist: name of the artist
 		"""
-		con = sqlite3.connect(self.database)
-		artist_key = 1
-
 		try:
+			self.connect()
 
-			cursor = con.cursor()
+			self.cur.execute("insert into artist(id, name, popularity) \
+			values (DEFAULT, %s, 0)",artist)
 
-			cursor.execute("insert into artist(name) values (?)", [artist])
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def addArtists(self, artists):
 		"""
