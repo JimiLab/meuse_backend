@@ -387,6 +387,11 @@ class DatabaseWrapper:
 	def getArtistToStationScore(self, artist, station):
 		"""
 		gets the score of an artist in the A2S table
+		
+		parameters
+		----------
+		artistID: id of artist
+		stationID: id of station
 		"""
 		output = None
 
@@ -410,6 +415,8 @@ class DatabaseWrapper:
 
 			self.disconnect()
 
+			if output == None:
+				return 0
 			return output
 
 	def addArtistsToStation(self, artistsAndStations):
@@ -447,7 +454,7 @@ class DatabaseWrapper:
 				artistID = self.getArtistID(artist)
 
 				#get current station score
-				score = self.getArtistToStationScore(artist, station)
+				score = self.getArtistToStationScore(artistID, stationID)
 
 				if score == 0:
 					#create new row
@@ -485,7 +492,8 @@ class DatabaseWrapper:
 		finally:
 
 			self.disconnect()
-
+			if output == None:
+				return 0
 			return output
 
 	def getArtistID(self, artist):
@@ -512,7 +520,8 @@ class DatabaseWrapper:
 		finally:
 
 			self.disconnect()
-
+			if output == None:
+				return 0
 			return output
 
 	def updateStationPopularity(self, station, newPopularity):
