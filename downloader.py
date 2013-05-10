@@ -197,6 +197,6 @@ class Downloader:
 
 def main():
 	downloader = Downloader()
-	downloader.download_stations()
+	downloader.download_tags()
 
 if  __name__ =='__main__':main()

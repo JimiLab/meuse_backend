@@ -184,9 +184,13 @@ class DatabaseWrapper:
 					a2tID = self.checkIfA2TExists(artistID, tagID)
 
 
-	def checkIfStationExists(self, station):
+	def checkIfStationExists(self, lastfmid):
 		"""
 		checks if a station exists in the database
+
+		parameters
+		----------
+		lastfmid: the last fm id of the station
 		"""		
 		output = None
 
@@ -194,8 +198,8 @@ class DatabaseWrapper:
 			self.connect()
 
 			self.cur.execute("select id from station \
-			where name = %s",
-			station)
+			where lastfmid = %s",
+			lastfmid)
 	
 			data = self.cur.fetchone()
 			#turn data from tuples into list of items
@@ -380,7 +384,8 @@ class DatabaseWrapper:
 		finally:
 
 			self.disconnect()
-
+			if output == None
+				return 0
 			return output
 
 
@@ -437,11 +442,12 @@ class DatabaseWrapper:
 
 				station = stationTuple[0]	
 				popularity = stationTuple[1]
-				
+				lastfmid = stationTuple[2]
+
 				#check if station exists
-				if (self.checkIfStationExists(station)==0):
+				if (self.checkIfStationExists(lastfmid)==0):
 					#put station in to the list
-					self.addStation(station, popularity)
+					self.addStation(station, popularity, lastfmid)
 
 				#otherwise, update the station popularity
 				else:
@@ -701,7 +707,7 @@ class DatabaseWrapper:
 
 			self.disconnect()
 
-	def addStation(self, station, popularity):
+	def addStation(self, station, popularity, lastfmid):
 		"""
 		adds a station into the database. Turns into an update if it exists
 
@@ -709,12 +715,13 @@ class DatabaseWrapper:
 		----------
 		station: the name of the station
 		popularity: the listen count of the station
+		lastfmid: the last.fm id of the station
 		"""
 		try:
 			self.connect()
 
-			self.cur.execute("insert into station(id, name, popularity) \
-			values (DEFAULT, %s, %s)",(station, popularity))
+			self.cur.execute("insert into station(id, name, popularity, lastfmid) \
+			values (DEFAULT, %s, %s, %s)",(station, popularity, lastfmid))
 
 		except mdb.Error, e: 
 			print "Error!"
