@@ -321,67 +321,59 @@ class DatabaseWrapper:
 		0 if the a2a entry does not exist, or the score
 		if it does
 		"""
-		con = sqlite3.connect(self.database)
-		data = []
-		output = 0
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select id from a2a where \
-				artist1ID=(?) and artist2ID=(?)", (artistID, simartistID))
-
-			data = cursor.fetchall()
-
+			self.cur.execute("select id from a2a \
+			where artist1ID = %s and artist2ID = %s",
+			(artistID, simartistID))
+	
+			data = self.cur.fetchone()
 			#turn data from tuples into list of items
-			output = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
+
 
 	def checkIfA2TExists(self, artistID, tagID):
 		"""
 		checks if an a2t entry exists
+		
+		parameters
+		----------
+		artistID: id of the artist
+		tagID: id of the tag
 		"""
-		con = sqlite3.connect(self.database)
-		data = []
-		output = 0
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select id from a2t where \
-				tagID=(?) and artistID=(?)", (tagID, artistID))
-
-			data = cursor.fetchall()
-
+			self.cur.execute("select id from a2t \
+			where artistID = %s and tagID = %s",
+			(artistID, tagID))
+	
+			data = self.cur.fetchone()
 			#turn data from tuples into list of items
-			output = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
 
@@ -389,63 +381,55 @@ class DatabaseWrapper:
 	def addTag(self, tagName):
 		"""
 		inserts a tag into the database
+
+		parameters
+		----------
+		tagname: name of the tag
 		"""
-		con = sqlite3.connect(self.database)
-
 		try:
+			self.connect()
 
-			cursor = con.cursor()
+			self.cur.execute("insert into tags(id, name) \
+			values (DEFAULT, %s, FALSE)",tagName)
 
-			cursor.execute("insert into tags (name) values (?)", [tagName])
-
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
 
-			if con:
+			self.disconnect()
 
-				con.commit()
-
-				con.close()
+		con = sqlite3.connect(self.database)
 
 	def getTagID(self, tagName):
 		"""
 		returns the ID for a tag, or 0 if it does not
 		exist
+
+		parameters
+		----------
+		tagName: name of the tag
 		"""
-		#get artistID and stationID
-		con = sqlite3.connect(self.database)
-		data = []
-		output = 0
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select id from tags where name=(?)", [tagName])
-
-			data = cursor.fetchall()
-
+			self.cur.execute("select id from tags where name = %s",
+			tagName)
+	
+			data = self.cur.fetchone()
 			#turn data from tuples into list of items
-			output = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
 
@@ -454,40 +438,29 @@ class DatabaseWrapper:
 		"""
 		gets the score of an artist in the A2S table
 		"""
-		#get artistID and stationID
-		con = sqlite3.connect(self.database)
-		data = []
-		output = 0
-
-		artistID = self.getArtistID(artist)
-		stationID = self.getStationID(station)
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select score from a2s where\
-				artistID = (?) and stationID = (?)", (artistID, stationID))
-
-			data = cursor.fetchall()
+			self.cur.execute("select score from a2s \
+			where artistID = %s and stationID = %s",
+			(artist, station))
+	
+			data = self.cur.fetchone()
 
 			#turn data from tuples into list of items
-			output = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
-
-				con.close()
+			self.disconnect()
 
 			return output
-
 
 	def addArtistsToStation(self, artistsAndStations):
 		"""
@@ -537,72 +510,60 @@ class DatabaseWrapper:
 	def getStationID(self, station):
 		"""
 		gets the id for the station passed in
+
+		parameters
+		----------
 		station: name of the station
 		"""
-		con = sqlite3.connect(self.database)
-		data = []
-		output = []
-		stationID = 0
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select id from station where name=(?)", [station])
-
-			data = cursor.fetchall()
+			self.cur.execute("select id from station where name = %s",
+			station)
+	
+			data = self.cur.fetchone()
 
 			#turn data from tuples into list of items
-			stationID = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
+			self.disconnect()
 
-				con.close()
-
-			return stationID
+			return output
 
 	def getArtistID(self, artist):
 		"""
 		gets the id for the artist passed in
 		station: name of the artist
 		"""
-		con = sqlite3.connect(self.database)
-		data = []
-		output = []
-		artistID = 0
+		output = None
 
 		try:
+			self.connect()
 
-			cursor = con.cursor()
-
-			cursor.execute("select id from artist where name=(?)", [artist])
-
-			data = cursor.fetchall()
-
+			self.cur.execute("select id from artist where name = %s",
+			artist)
+	
+			data = self.cur.fetchone()
 			#turn data from tuples into list of items
-			artistID = data[0][0]
+			output = data[0]
 
-		except sqlite3.Error, e:
-
+		except _mysql.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
-
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
 		finally:
 
-			if con:
+			self.disconnect()
 
-				con.close()
-
-			return artistID
+			return output
 
 	def updateStationPopularity(self, station, newPopularity):
 		"""
@@ -616,34 +577,20 @@ class DatabaseWrapper:
 		newPopularity: popularity of the station	
 		"""
 
-
-
-		con = sqlite3.connect(self.database)
-
 		try:
-
-			cursor = con.cursor()
-
-			cursor.execute("update station set \
-				popularity=((station.popularity + (?))/2) \
-			where name = (?)", 
+			self.connect()
+			
+			self.cur.execute("update station \
+			set popularity = ((station.popularity + %s)/2) \
+			where name = %s",
 			(newPopularity, station))
 
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
-
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def updateArtistPopularity(self, artist, newPopularity):
 		"""
@@ -656,33 +603,20 @@ class DatabaseWrapper:
 		artist: name of the artist
 		newPopularity: popularity of the station	
 		"""
-
-		con = sqlite3.connect(self.database)
-
 		try:
-
-			cursor = con.cursor()
-
-			cursor.execute("update artist set \
-				popularity=((artist.popularity + (?))/2) \
-			where name = (?)", 
+			self.connect()
+			
+			self.cur.execute("update artist \
+			set popularity = ((artist.popularity + %s) / 2) \
+			where name = %s",
 			(newPopularity, artist))
 
-		except sqlite3.Error, e:
-
-			if con: con.rollback()
-
+		except mdb.Error, e: 
 			print "Error!"
-
-			print "Error %s:" % e.args[0]
+			print "Error %d: %s" % (e.args[0],e.args[1])
 
 		finally:
-
-			if con:
-
-				con.commit()
-
-				con.close()
+			self.disconnect()
 
 	def updateA2A(self, artist1ID, artist2ID, score):
 		"""
