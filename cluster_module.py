@@ -1,12 +1,13 @@
 """
 conducts the clustering function using scikit-learn
 """
-
+import json
 from database_wrapper import DatabaseWrapper
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction import FeatureHasher
 from sklearn.cluster import KMeans
 from shoutcast_wrapper import ShoutcastWrapper
+
 class ClusterModule:
 	"""
 	clusters stations by artist using scikit-learn.
@@ -146,6 +147,25 @@ class ClusterModule:
 
 		return {"data" : artistsetlist, "labels" : mergelist}
 
+	def selectTopArtistTags(self, data):
+		"""
+		selects top tags when given a list of artists
+		
+		parameters
+		----------
+		data: a list of artists
+		
+		returns: top 3 tags for each artist
+		"""
+		db = DatabaseWrapper()
+		output = []
+
+		for artist in data:
+			topTags = db.getTagsForArtist(artist[0])
+			output.append(topTags[:3])
+		
+		return output
+
 	def selectRepresentativeArtists(self, data):
 		"""
 		selects a representative set of artists using the set difference
@@ -189,6 +209,8 @@ class ClusterModule:
 		topartists = []
 		topstations = []
 		toptags = []
+		
+		outputlist = []
 
 		#get the data for the artist
 		dataset = self.getPlayingStations(artist)
@@ -205,8 +227,13 @@ class ClusterModule:
 		topartists = self.selectRepresentativeArtists(clusteredset['data'])
 
 		#pick the top tags for each station
+		#for now, getting top tags for the artist
+		toptags = self.selectTopArtistTags(topartists)
 
-		return topstations
+		for i in range(0,3):
+			outputlist.append([topstations[i], topartists[i], toptags[i]])
+
+		return json.dumps({"success":"True", "data":outputlist})
 		
 def main():
 	#get dataset for artist sting
