@@ -17,7 +17,7 @@ class ShoutcastWrapper:
 	def getStationPlayingArtist(self, artist):
 		"""
 		returns a list of shoutcast stations playing the given
-		artist. Each station is a dictionary.
+		artist. Each station is a three-tuple.
 
 		parameters
 		----------
@@ -25,7 +25,7 @@ class ShoutcastWrapper:
 
 		return
 		------
-		a list of tuples (station name, listen count)
+		a list of tuples (station name, listen count, id)
 		"""
 
 		stationDictList = []

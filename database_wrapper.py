@@ -108,6 +108,45 @@ class DatabaseWrapper:
 
 			return output
 
+	def getStationTuplesForArtist(self, artist):
+		"""
+		gets the list of stations which have
+		played the given artist
+	
+		parameters
+		----------
+		artist: the name of the artist
+
+		returns
+		-------
+		a list of tuples. Each tuple contains (name, lastfmid)
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+			self.cur.execute("select station.name, station.lastfmid \
+				from artist, station, a2s \
+				where artist.name=%s and\
+				station.id = a2s.stationid and\
+				artist.id = a2s.artistid \
+				order by station.popularity", artist)
+		
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+			
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+
+			return data
+
+
 	def getStationsForArtist(self, artist):
 		"""
 		gets the list of stations which have
