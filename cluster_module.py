@@ -27,7 +27,10 @@ class ClusterModule:
 		a list of clusters, where a cluster is a
 		list of station names
 		"""
-		output = []
+		outputlabels = [] #the set of stations per cluster
+		outputdata = [] #list of set of artists per cluster
+		finaloutputdata = [] 
+
 		hasher = FeatureHasher(input_type="string")
 		transformer = TfidfTransformer()
 		km = KMeans(n_clusters=self.numberOfClusters, init='k-means++',
@@ -45,14 +48,26 @@ class ClusterModule:
 
 		#init output array
 		for i in range(0, len(set(labeleddata))):
-			output.append([])
+			outputlabels.append([])
+			outputdata.append([])
 
 		#add items to output array
 		for i in range (0, len(labeleddata)):
 			currentcluster = labeleddata[i]
-			output[currentcluster].append(dataset['labels'][i])
+			outputlabels[currentcluster].append(dataset['labels'][i])
+			outputdata[currentcluster].append(dataset['data'][i])
 
-		return output
+		#change the artist list to artist sets
+		for item in outputdata:
+			listofartists = []
+
+			for artistlist in item:
+				for artist in artistlist:
+					listofartists.append(artist)
+
+			finaloutputdata.append(list(set(listofartists)))
+
+		return {"labels" : outputlabels, "data" : finaloutputdata}
 
 	def getPlayingStations(self, artist):
 		"""
@@ -147,6 +162,9 @@ class ClusterModule:
 
 		#cluster the data
 		clusteredset = self.cluster(dataset)
+
+		#pick the station for each set
+
 
 		return clusteredset
 def main():
