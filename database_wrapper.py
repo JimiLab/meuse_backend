@@ -220,11 +220,12 @@ class DatabaseWrapper:
 
 		try:
 			self.connect()
-			self.cur.execute("select artist.name \
+			self.cur.execute("select artist.name, artist.popularity \
 				from artist, station, a2s \
 				where station.lastfmid=%s and\
 				station.id = a2s.stationid and\
-				artist.id = a2s.artistid", stationID)
+				artist.id = a2s.artistid \
+				order by artist.popularity", stationID)
 
 			data = self.cur.fetchall()
 			#turn data from tuples into list of items
