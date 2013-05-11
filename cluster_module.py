@@ -78,6 +78,7 @@ class ClusterModule:
 		db = DatabaseWrapper()
 		mergedict = {}
 		mergelist = []
+		artistsetlist = []
 
 		#gets the set of currently playing stations
 		playingStationSet = sr.getStationPlayingArtist(artist)
@@ -87,24 +88,67 @@ class ClusterModule:
 
 		#merges the two sets of stations, while preserving order of
 		#listen count
-		
-		#add all of the playingstationset in order id, name, isplaying
-		for item in playingStationSet:
-			mergedict[(item[2], item[0])] = None
-			mergelist.append((item[2], item[0], True))
 	
-		#add only the unique stations from the historically played stations
+		#add all of the historically played stations
+		itemcount = 0
 		for item in historicalStationSet:
 			itemId = item[1]
 			itemName = item[0]
-			
-			if not mergedict.has_key((itemId, itemName)):
-				mergelist.append((itemId, itemName, False))	
+
+			mergedict[itemId] = itemcount
+			mergelist.append((itemId, itemName, False))
+			itemcount = itemcount + 1
+
+		#add only the unique stations from now playing
+		for item in playingStationSet:
+			itemId = item[2]
+			itemName = item[0]
+			itemLC = item[1]
+
+			#if the station is already in the list, change
+			#status to playing
+			if (mergedict.has_key(itemId)):
+				itemnumber = mergedict[itemId]
+				mergelist[itemnumber] = (itemId, itemName, True)
+
+			#else append the station to the top of the list
+			#and add the station to the db
+			else:
+				mergelist.insert(0, (itemId, itemName, True))
+				db.addStationForArtist(artist, (itemName, itemId, itemLC)) 
+
+		#get set of artists for each station
+		for item in mergelist:
+			stationID = item[0]
+			artistset = db.getArtistsForStationID(stationID)
+			artistsetlist.append(artistset)
+
+		return {"data" : artistsetlist, "labels" : mergelist}
+	
+	def getJSONResponseForArtist(self, artist):
+		"""
+		creates a JSON response for a given artist
 		
+		parameters
+		----------
+		artist: name of artist to search for
+		
+		returns
+		-------
+		a JSON string consisting of:
+			a list of 3 stations.
+			each station contains:
+				a representative artist
+				3 tags representing the station
+		"""
+		
+		#get the data for the artist
+		dataset = self.getPlayingStations(artist)
 
-		return mergelist 
+		#cluster the data
+		clusteredset = self.cluster(dataset)
 
-
+		return clusteredset
 def main():
 	#get dataset for artist sting
 	db = DatabaseWrapper()

@@ -37,6 +37,31 @@ class DatabaseWrapper:
 		if (self.con):
 			self.con.close()
 
+	def addStationForArtist(self, artist, station):
+		"""
+		adds a station for the given artist
+		parameters
+		----------
+		artist: name of the artist
+		station: 3 tuple
+			name of the station,
+			id of the station
+			listen count
+		"""
+		stationName = station[0]
+		stationId = station[1]
+		stationLC = station[2]
+
+		# add station to db
+		self.addStation(stationName, stationLC, stationId)
+
+		stationID = self.getStationIDWithLFMId(stationId)
+
+		artistID = self.getArtistID(artist)
+
+		# add A2S entry
+		self.addArtistToA2S(artistID, stationID, 0)
+
 	def getStationSetForArtist(self, artist):
 		"""
 		***TOO SLOW***
@@ -181,6 +206,42 @@ class DatabaseWrapper:
 
 			return output
 
+	def getArtistsForStationID(self, stationID):
+		"""
+		gets the list of artists who have been 
+		played on the given station
+
+		parameters
+		----------
+		stationID: id of the station
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+			self.cur.execute("select artist.name \
+				from artist, station, a2s \
+				where station.lastfmid=%s and\
+				station.id = a2s.stationid and\
+				artist.id = a2s.artistid", stationID)
+
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])		
+	
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+
+			return output
+
+
 	def getArtistsForStation(self, station):
 		"""
 		gets the list of artists who have been 
@@ -257,6 +318,7 @@ class DatabaseWrapper:
 					self.addA2T(artistID, tagID, tagScore)
 				else:
 					self.updateA2T(artistID, tagID, tagScore)
+
 	def checkIfStationExists(self, lastfmid):
 		"""
 		checks if a station exists in the database
@@ -542,6 +604,37 @@ class DatabaseWrapper:
 					#update row
 					self.updateArtistToA2S(artistID, stationID, score + 1)
 
+	def getStationIDWithLFMId(self, stationID):
+		"""
+		gets the id for the station passed in using the last fm id of station
+
+		parameters
+		----------
+		stationID: lastfm id of the station
+		"""
+		output = None
+
+		try:
+			self.connect()
+
+			self.cur.execute("select id from station where lastfmid = %s",
+			stationID)
+	
+			data = self.cur.fetchone()
+
+			#turn data from tuples into list of items
+			output = data[0]
+
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+			if output == None:
+				return 0
+			return output
 	def getStationID(self, station):
 		"""
 		gets the id for the station passed in
