@@ -214,6 +214,10 @@ class ClusterModule:
 
 		#get the data for the artist
 		dataset = self.getPlayingStations(artist)
+		
+		#error check - if no artists
+		if len(dataset['data']) < 4:
+			return json.dumps({"success" : "False", "data" : []})
 
 		#cluster the data
 		clusteredset = self.cluster(dataset)
