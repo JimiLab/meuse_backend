@@ -35,9 +35,15 @@ class ClusterModule:
 		transformer = TfidfTransformer()
 		km = KMeans(n_clusters=self.numberOfClusters, init='k-means++',
 			max_iter=10, n_init=1, verbose=0)
+		
+		#edit the dataset so that it contains only artist name and not
+		#artist popularity
+		artistdataset = dataset['data']
+		newartistdataset = []
+		for i in range(0, len(artistdataset)):
+			newartistdataset.append(artistdataset[i][0][0])
 
-		#datacounts = counter.fit_transform(dataset['data'])
-		datacounts = hasher.fit_transform(dataset['data'])
+		datacounts = hasher.fit_transform(newartistdataset)
 		#tfidfcounts = transformer.fit_transform(datacounts)
 		
 		#disabled tf-idf because too slow
@@ -139,7 +145,30 @@ class ClusterModule:
 			artistsetlist.append(artistset)
 
 		return {"data" : artistsetlist, "labels" : mergelist}
-	
+
+	def selectRepresentativeArtists(self, data):
+		"""
+		selects a representative set of artists using the set difference
+		
+		parameters
+		----------
+		data: the dataset of 3 clusters of artist sets
+		"""
+		setlist = [] #list of unique sets
+		differencelist = [] #list of set differences
+		outputlist = []
+
+		#calculate set differences
+		setlist.append(list(set(data[0]) - (set (data[1] + data[2])))) 
+		setlist.append(list(set(data[1]) - (set (data[0] + data[2])))) 
+		setlist.append(list(set(data[2]) - (set (data[1] + data[0])))) 
+		
+		#sort the lists in order of popularity
+		for item in setlist:
+			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[0])
+		
+		return outputlist
+
 	def getJSONResponseForArtist(self, artist):
 		"""
 		creates a JSON response for a given artist
@@ -156,7 +185,11 @@ class ClusterModule:
 				a representative artist
 				3 tags representing the station
 		"""
-		
+		#vars
+		topartists = []
+		topstations = []
+		toptags = []
+
 		#get the data for the artist
 		dataset = self.getPlayingStations(artist)
 
@@ -164,9 +197,17 @@ class ClusterModule:
 		clusteredset = self.cluster(dataset)
 
 		#pick the station for each set
+		stations = clusteredset['labels']
+		for item in stations:
+			topstations.append(item[0])
 
+		#pick the representative artist for each set
+		topartists = self.selectRepresentativeArtists(clusteredset['data'])
 
-		return clusteredset
+		#pick the top tags for each station
+
+		return topstations
+		
 def main():
 	#get dataset for artist sting
 	db = DatabaseWrapper()
@@ -178,3 +219,4 @@ def main():
 	print(output)
 
 if  __name__ =='__main__':main()
+

@@ -228,10 +228,12 @@ class DatabaseWrapper:
 				order by artist.popularity", stationID)
 
 			data = self.cur.fetchall()
+			output = data
+			"""
 			#turn data from tuples into list of items
 			for item in data:
 				output.append(item[0])		
-	
+			"""
 		except _mysql.Error, e: 
 			print "Error!"
 			print "Error %d: %s" % (e.args[0], e.args[1])
