@@ -132,7 +132,7 @@ class ClusterModule:
 			#status to playing
 			if (mergedict.has_key(itemId)):
 				itemnumber = mergedict[itemId]
-				mergelist[itemnumber] = (itemId, itemName, True)
+				mergelist[itemnumber] = (itemId, itemName, True, itemCT)
 
 			#else append the station to the top of the list
 			#and add the station to the db
@@ -217,6 +217,7 @@ class ClusterModule:
 				3 tags representing the station
 		"""
 		#vars
+		sr = ShoutcastWrapper()
 		topartists = []
 		topstations = []
 		toptags = []
@@ -236,7 +237,18 @@ class ClusterModule:
 		#pick the station for each set
 		stations = clusteredset['labels']
 		for item in stations:
-			topstations.append(item[0])
+			stationtoappend = item[0]
+
+			#check if there is a now playing artist
+			if (stationtoappend[2] == False):
+				shoutcastid = stationtoappend[0]
+				name = stationtoappend[1]
+				currenttrack = sr.getCurrentTrackForStation(name)
+				newstationtuple = (shoutcastid, name, currenttrack, False)
+				topstations.append(newstationtuple)
+			else:
+				topstations.append(stationtoappend)
+
 
 		#pick the representative artist for each set
 		topartists = self.selectRepresentativeArtists(clusteredset['data'])
