@@ -244,7 +244,7 @@ class ClusterModule:
 				shoutcastid = stationtoappend[0]
 				name = stationtoappend[1]
 				currenttrack = sr.getCurrentTrackForStation(name)
-				newstationtuple = (shoutcastid, name, currenttrack, False)
+				newstationtuple = (shoutcastid, name, False, currenttrack)
 				topstations.append(newstationtuple)
 			else:
 				topstations.append(stationtoappend)
