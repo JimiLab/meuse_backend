@@ -147,9 +147,9 @@ class ClusterModule:
 
 		return {"data" : artistsetlist, "labels" : mergelist}
 
-	def selectTopArtistTags(self, data):
+	def selectTopStationTags(self, data):
 		"""
-		selects top tags when given a list of artists
+		selects top tags when given a list of stations
 		
 		parameters
 		----------
@@ -160,8 +160,10 @@ class ClusterModule:
 		db = DatabaseWrapper()
 		output = []
 
-		for artist in data:
-			topTags = db.getTagsForArtist(artist[0])
+		for station in data:
+			print station
+			topTags = db.getTagsForStation(station[0])
+			print topTags
 			output.append(topTags[:3])
 		
 		return output
@@ -231,8 +233,7 @@ class ClusterModule:
 		topartists = self.selectRepresentativeArtists(clusteredset['data'])
 
 		#pick the top tags for each station
-		#for now, getting top tags for the artist
-		toptags = self.selectTopArtistTags(topartists)
+		toptags = self.selectTopStationTags(topstations)
 
 		for i in range(0,3):
 			outputlist.append([topstations[i], topartists[i], toptags[i]])

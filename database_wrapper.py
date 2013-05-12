@@ -100,6 +100,43 @@ class DatabaseWrapper:
 			dataset["labels"].append(station)
 
 		return dataset
+	
+	def getTagsForStation(self, lastfmID):
+		"""
+		gets the top tags for a station 
+
+		parameters
+		----------
+		lastfmid: lastfm id of the station
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+			self.cur.execute("SELECT tags.name\
+			FROM tags\
+			INNER JOIN a2t ON tags.id = a2t.tagid\
+			INNER JOIN a2s ON a2t.artistid = a2s.artistid\
+			INNER JOIN station ON a2s.stationid = station.id\
+			WHERE station.lastfmid = %s\
+			and tags.isActive=True", lastfmID)
+		
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])		
+			
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+
+			return output
+
 
 	def getTagsForArtist(self, artist):
 		"""
