@@ -24,7 +24,7 @@ class DatabaseWrapper:
 		connects to the mysql database
 		"""
 		try:
-			self.con = mdb.connect("localhost", self.username, self.password, self.database)
+			self.con = mdb.connect("localhost", self.username, self.password, self.database, use_unicode=True)
 			self.cur = self.con.cursor()
 
 		except _mysql.Error, e:
