@@ -41,7 +41,7 @@ class ShoutcastWrapper:
 			stationDictList = data['response']['data']['stationlist']['station']
 
 			for item in stationDictList:
-				stationList.append((item['name'], item['lc'], item['id']))
+				stationList.append((item['name'], item['lc'], item['id'], item['ct']))
 
 
 		except Exception as e:

@@ -126,6 +126,7 @@ class ClusterModule:
 			itemId = item[2]
 			itemName = item[0]
 			itemLC = item[1]
+			itemCT = item[3]
 
 			#if the station is already in the list, change
 			#status to playing
@@ -136,7 +137,7 @@ class ClusterModule:
 			#else append the station to the top of the list
 			#and add the station to the db
 			else:
-				mergelist.insert(0, (itemId, itemName, True))
+				mergelist.insert(0, (itemId, itemName, True, itemCT))
 				db.addStationForArtist(artist, (itemName, itemId, itemLC)) 
 
 		#get set of artists for each station
