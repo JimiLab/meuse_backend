@@ -158,14 +158,22 @@ class ClusterModule:
 		returns: top 3 tags for each artist
 		"""
 		db = DatabaseWrapper()
+		taglist = []
 		output = []
 
 		for station in data:
-			print station
 			topTags = db.getTagsForStation(station[0])
-			print topTags
-			output.append(topTags[:3])
+			taglist.append(topTags)
 		
+		#calculate set differences
+		output.append(list(set(taglist[0]) - (set (taglist[1] + taglist[2])))[:3]) 
+		#if the first set difference is empty, just return the first three tags
+		if (output[0] == []):
+			output[0] = taglist[0][:3]
+
+		output.append(list(set(taglist[1]) - (set (output[0] + taglist[2])))[:3]) 
+		output.append(list(set(taglist[2]) - (set (output[1] + output[0])))[:3]) 
+
 		return output
 
 	def selectRepresentativeArtists(self, data):
