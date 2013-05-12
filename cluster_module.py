@@ -195,7 +195,7 @@ class ClusterModule:
 		
 		#sort the lists in order of popularity
 		for item in setlist:
-			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[0])
+			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[:3])
 		
 		return outputlist
 
