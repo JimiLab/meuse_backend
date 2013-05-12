@@ -4,6 +4,7 @@ wrapper for shoutcast api
 import urllib2
 import json
 import requests
+import xml.etree.cElementTree as et
 
 class ShoutcastWrapper:
 	"""
@@ -11,8 +12,39 @@ class ShoutcastWrapper:
 	"""
 	rootUrl = "http://api.shoutcast.com/station/"
 	nowPlayingUrl = "http://api.shoutcast.com/station/nowplaying"
+	currentTrackUrl = "http://api.shoutcast.com/legacy/stationsearch"
 	apiKey = "**api_key**"
 	header = {'User-agent' : 'meuse'}
+
+	def getCurrentTrackForStation(self, station):
+		"""
+		looks up what a station is playing
+
+		parameters
+		----------
+		station: the name of the station to check
+		
+		return
+		------
+		track being played by the station
+		"""
+
+		args = {"search" : station, "k" : self.apiKey, "f" : "json"}
+
+		try:
+			request = requests.get(self.currentTrackUrl, params=args)
+			data = request.content
+
+			#parse the xml data
+			tree = et.fromstring(data)
+			person = tree.find('station')
+			stationname = person.attrib.get('ct') 
+
+		except Exception as e:
+			print "No artists found OR http request error"
+			return ""
+
+		return stationname
 
 	def getStationPlayingArtist(self, artist):
 		"""
