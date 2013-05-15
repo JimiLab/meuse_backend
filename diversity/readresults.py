@@ -71,27 +71,39 @@ def main():
 			if (re.match(seedartistpattern, element)):
 				print seedartist + ", " + element
 				seedartistcount = seedartistcount + 1
+				totalcount = totalcount + 1
 
 		#display intersection with predictedartist
 		for element in datarow:
 			for predictedartist in predictedartists:
 				predictedartistpattern = ".*" + predictedartist[0] + ".*"
-				if (re.match(predictedartistpattern, element)):
-					predictedartistcount = predictedartistcount + 1
+				try:
+					if (re.match(predictedartistpattern, element)):
+						predictedartistcount = predictedartistcount + 1
+				except:
+					print "Error"
+					totalcount = totalcount - 1
+
+				totalcount = totalcount + 1
+
 		#display intersection with nonpredictedartist
 		for element in datarow:
 			for predictedartist in nonpredictedartists:
 				predictedartistpattern = ".*" + predictedartist[0] + ".*"
-				if (re.match(predictedartistpattern, element)):
-					nonpredictedartistcount = nonpredictedartistcount + 1
+				try:
+					if (re.match(predictedartistpattern, element)):
+						nonpredictedartistcount = nonpredictedartistcount + 1
+				except:
+					print "Error"
+					totalcount = totalcount - 1
 
+				totalcount = totalcount + 1
 
-		totalcount = totalcount + 1
-			
-	print "seedartist: " + str(seedartistcount)
-	print "predictedartist: " + str(predictedartistcount)
-	print "nonpredictedartist: " + str(nonpredictedartistcount)
+	print "seedartist: " + str(seedartistcount) + ", " + str((float(seedartistcount)/totalcount))
+	print "predictedartist: " + str(predictedartistcount) + ", " + str((float(predictedartistcount) / 3.0))
+	print "nonpredictedartist: " + str(nonpredictedartistcount) + ", " + str((float(nonpredictedartistcount) / 6.0))
 	print "other: " + str((totalcount - seedartistcount - predictedartistcount))
+	print "total: " + str(totalcount)
 
 if  __name__ =='__main__':main()
 
