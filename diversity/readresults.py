@@ -62,16 +62,25 @@ def main():
 		seedartist = currentstationdata['seedartist']
 
 		datarow = getcolumnfromdata(stationdata, i)
-
+		
 		#search for seedartist
 		seedartistpattern = ".*" + seedartist + ".*" 
 
 		#display intersection with seed artist
 		for element in datarow:
+			
+			print seedartist + ", " + element
+			
 			if (re.match(seedartistpattern, element)):
-				print seedartist + ", " + element
 				seedartistcount = seedartistcount + 1
-				totalcount = totalcount + 1
+
+			elif (len(element.strip()) == 0):
+				print "remove"
+				totalcount = totalcount - 1
+
+			totalcount = totalcount + 1
+
+		#raw_input()
 
 		#display intersection with predictedartist
 		for element in datarow:
@@ -82,9 +91,7 @@ def main():
 						predictedartistcount = predictedartistcount + 1
 				except:
 					print "Error"
-					totalcount = totalcount - 1
 
-				totalcount = totalcount + 1
 
 		#display intersection with nonpredictedartist
 		for element in datarow:
@@ -95,9 +102,7 @@ def main():
 						nonpredictedartistcount = nonpredictedartistcount + 1
 				except:
 					print "Error"
-					totalcount = totalcount - 1
 
-				totalcount = totalcount + 1
 
 	print "seedartist: " + str(seedartistcount) + ", " + str((float(seedartistcount)/totalcount))
 	print "predictedartist: " + str(predictedartistcount) + ", " + str((float(predictedartistcount) / 3.0))
