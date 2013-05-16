@@ -51,7 +51,7 @@ class DatabaseWrapper:
 		stationName = station[0]
 		stationId = station[1]
 		stationLC = station[2]
-
+		
 		# add station to db
 		self.addStation(stationName, stationLC, stationId)
 
@@ -59,8 +59,12 @@ class DatabaseWrapper:
 
 		artistID = self.getArtistID(artist)
 
-		# add A2S entry
-		self.addArtistToA2S(artistID, stationID, 0)
+		if (self.checkIfA2SExists(artistID, stationID)):
+			self.updateA2S(artistID, stationID)
+
+		else:
+			# add A2S entry
+			self.addArtistToA2S(artistID, stationID, 0)
 
 	def getStationSetForArtist(self, artist):
 		"""
@@ -174,6 +178,8 @@ class DatabaseWrapper:
 		"""
 		gets the list of stations which have
 		played the given artist
+		the stations are ordered by the score
+		for the givne artist
 	
 		parameters
 		----------
@@ -193,7 +199,8 @@ class DatabaseWrapper:
 				where artist.name=%s and\
 				station.id = a2s.stationid and\
 				artist.id = a2s.artistid \
-				order by station.popularity", artist)
+				order by a2s.score, station.popularity \
+				limit 0, 30", artist)
 		
 			data = self.cur.fetchall()
 			#turn data from tuples into list of items
@@ -262,7 +269,8 @@ class DatabaseWrapper:
 				where station.lastfmid=%s and\
 				station.id = a2s.stationid and\
 				artist.id = a2s.artistid \
-				order by artist.popularity", stationID)
+				order by artist.popularity \
+				limit 0, 30", stationID)
 
 			data = self.cur.fetchall()
 			output = data
@@ -471,6 +479,41 @@ class DatabaseWrapper:
 				return 0
 
 			return output
+
+	def checkIfA2SExists(self, artistID, stationID):
+		"""
+		checks if an a2t entry exists
+		
+		parameters
+		----------
+		artistID: id of the artist
+		stationID: id of the station
+		"""
+		output = None
+
+		try:
+			self.connect()
+
+			self.cur.execute("select id from a2s \
+			where artistID = %s and stationID = %s",
+			(artistID, stationID))
+	
+			data = self.cur.fetchone()
+			#turn data from tuples into list of items
+			output = data[0]
+
+		except _mysql.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0], e.args[1])
+	
+		finally:
+
+			self.disconnect()
+			if output == None:
+				return 0
+
+			return output
+
 
 	def checkIfA2TExists(self, artistID, tagID):
 		"""
@@ -788,6 +831,34 @@ class DatabaseWrapper:
 
 		finally:
 			self.disconnect()
+
+	def updateA2S(self, artistID, stationID):
+		"""
+		Updates the score of a a2s score as follows
+
+		popularity = score = score + 1
+
+		parameters
+		----------
+		artistID: id of the artist
+		stationID: id of the station
+		score: score for the a2s
+		"""
+		try:
+			self.connect()
+			
+			self.cur.execute("update A2s \
+			set score = (a2s.score + 1) \
+			where artistID = %s and stationID =%s",
+			(artistID, stationID))
+
+		except mdb.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0],e.args[1])
+
+		finally:
+			self.disconnect()
+
 
 	def updateA2T(self, artistID, tagID, score):
 		"""
@@ -1122,6 +1193,36 @@ class DatabaseWrapper:
 			self.disconnect()
 
 			return output
+
+	def get100ArtistFromTop500(self):
+		"""
+		returns a list of 100 artists selected form the top 500
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+
+			self.cur.execute("select name from artist \
+				where popularity > 9\
+				order by rand() \
+				limit 100")
+	
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+			for item in data:
+				output.append(item[0])		
+	
+		except: 
+			print "Error!"
+	
+		finally:
+
+			self.disconnect()
+
+			return output
+
 
 	def getArtists(self):
 		"""

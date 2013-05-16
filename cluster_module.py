@@ -43,14 +43,18 @@ class ClusterModule:
 		newartistdataset = []
 		for i in range(0, len(artistdataset)):
 			newartistdataset.append(artistdataset[i][0][0])
+		
+		print "clustering " + str(len(artistdataset))  + " artists"
 
 		datacounts = hasher.fit_transform(newartistdataset)
 		#tfidfcounts = transformer.fit_transform(datacounts)
 		
 		#disabled tf-idf because too slow
 		#km.fit(tfidfcounts)
+		print "clustering"
 		km.fit(datacounts)
-		
+		print "clustering done"
+
 		labeleddata = km.labels_
 
 		#init output array
@@ -132,8 +136,7 @@ class ClusterModule:
 			#status to playing
 			if (mergedict.has_key(itemId)):
 				itemnumber = mergedict[itemId]
-				mergelist[itemnumber] = (itemId, itemName, True, itemCT)
-
+				mergelist[itemnumber] = item 
 			#else append the station to the top of the list
 			#and add the station to the db
 			else:
@@ -166,14 +169,18 @@ class ClusterModule:
 			topTags = db.getTagsForStation(station[0])
 			taglist.append(topTags)
 		
-		#calculate set differences
-		output.append(list(set(taglist[0]) - (set (taglist[1] + taglist[2])))[:3]) 
-		#if the first set difference is empty, just return the first three tags
-		if (output[0] == []):
-			output[0] = taglist[0][:3]
+		if (len(taglist) > 2):
+			#calculate set differences
+			output.append(list(set(taglist[0]) - (set (taglist[1] + taglist[2])))[:3]) 
+			#if the first set difference is empty, just return the first three tags
+			if (output[0] == []):
+				output[0] = taglist[0][:3]
 
-		output.append(list(set(taglist[1]) - (set (output[0] + taglist[2])))[:3]) 
-		output.append(list(set(taglist[2]) - (set (output[1] + output[0])))[:3]) 
+			output.append(list(set(taglist[1]) - (set (output[0] + taglist[2])))[:3]) 
+			output.append(list(set(taglist[2]) - (set (output[1] + output[0])))[:3]) 
+		else:
+			print "Not enough tags to calculate tag difference"
+			output = [[],[],[]]
 
 		return output
 
@@ -189,15 +196,87 @@ class ClusterModule:
 		differencelist = [] #list of set differences
 		outputlist = []
 
+		#make sure there is enough data
+		if (len(data) > 2):
 		#calculate set differences
-		setlist.append(list(set(data[0]) - (set (data[1] + data[2])))) 
-		setlist.append(list(set(data[1]) - (set (data[0] + data[2])))) 
-		setlist.append(list(set(data[2]) - (set (data[1] + data[0])))) 
-		
+			setlist.append(list(set(data[0]) - (set (data[1] + data[2])))) 
+			setlist.append(list(set(data[1]) - (set (data[0] + data[2])))) 
+			setlist.append(list(set(data[2]) - (set (data[1] + data[0])))) 
+		else:
+			print "Not enough artists to recommend"
+			setlist = [[],[],[]]
+
 		#sort the lists in order of popularity
 		for item in setlist:
 			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[:3])
 		
+		return outputlist
+	
+	def getDataResponseForArtist(self, artist):
+		"""
+		creates a response for a given artist but not in JSON
+		
+		parameters
+		----------
+		artist: name of artist to search for
+		
+		returns
+		-------
+		a list of 3 stations.
+		each station contains:
+			a representative artist
+			3 tags representing the station
+		"""
+		#vars
+		sr = ShoutcastWrapper()
+		topartists = []
+		topstations = []
+		toptags = []
+		
+		outputlist = []
+
+		#get the data for the artist
+		dataset = self.getPlayingStations(artist)
+		
+		#error check - if no artists
+		if len(dataset['data']) < 4:
+			return []
+
+		#cluster the data
+		clusteredset = self.cluster(dataset)
+
+		#pick the station for each set
+		stations = clusteredset['labels']
+		for item in stations:
+			stationtoappend = item[0]
+
+			#check if there is a now playing artist
+			if (stationtoappend[2] == False):
+				shoutcastid = stationtoappend[0]
+				name = stationtoappend[1]
+				currenttrack = sr.getCurrentTrackForStationWithData(name)
+				currenttrackname = currenttrack['stationname']
+				bitrate = currenttrack['br']
+				encoding = currenttrack['en']
+				newstationtuple = (shoutcastid, name, False, currenttrackname, bitrate, encoding)
+				topstations.append(newstationtuple)
+			else:
+				topstations.append(stationtoappend)
+
+		
+		#append 3 dummy lists to topstations to prevent errors if no stations found
+		for i in range(0,3):
+			topstations.append(("",""))
+
+		#pick the representative artist for each set
+		topartists = self.selectRepresentativeArtists(clusteredset['data'])
+
+		#pick the top tags for each station
+		toptags = self.selectTopStationTags(topstations)
+
+		for i in range(0,3):
+			outputlist.append([topstations[i], topartists[i], toptags[i]])
+
 		return outputlist
 
 	def getJSONResponseForArtist(self, artist):
@@ -230,9 +309,13 @@ class ClusterModule:
 		#error check - if no artists
 		if len(dataset['data']) < 4:
 			return json.dumps({"success" : "False", "data" : []})
+		
+		print "clustering"
 
 		#cluster the data
 		clusteredset = self.cluster(dataset)
+		
+		print "clustering done"
 
 		#pick the station for each set
 		stations = clusteredset['labels']
@@ -243,12 +326,21 @@ class ClusterModule:
 			if (stationtoappend[2] == False):
 				shoutcastid = stationtoappend[0]
 				name = stationtoappend[1]
-				currenttrack = sr.getCurrentTrackForStation(name)
-				newstationtuple = (shoutcastid, name, False, currenttrack)
+				currenttrack = sr.getCurrentTrackForStationWithData(name)
+				currenttrackname = currenttrack['stationname']
+				bitrate = currenttrack['br']
+				encoding = currenttrack['en']
+				listencount = currenttrack['lc']
+				newstationtuple = (shoutcastid, name, False, currenttrackname, bitrate, encoding, listencount)
+
 				topstations.append(newstationtuple)
 			else:
 				topstations.append(stationtoappend)
 
+		
+		#append 3 dummy lists to topstations to prevent errors if no stations found
+		for i in range(0,3):
+			topstations.append(("",""))
 
 		#pick the representative artist for each set
 		topartists = self.selectRepresentativeArtists(clusteredset['data'])
