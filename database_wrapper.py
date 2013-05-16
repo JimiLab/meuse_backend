@@ -832,6 +832,27 @@ class DatabaseWrapper:
 		finally:
 			self.disconnect()
 
+	def activateTag(self, tagID):
+		"""
+		activates the tag whose id is passed
+	 	in
+		"""
+		try:
+			self.connect()
+			
+			self.cur.execute("update tags\
+			set isActive = True\
+			where id = %s", tagID)
+
+		except mdb.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0],e.args[1])
+
+		finally:
+			self.disconnect()
+
+	
+	
 	def updateA2S(self, artistID, stationID):
 		"""
 		Updates the score of a a2s score as follows
@@ -1223,6 +1244,41 @@ class DatabaseWrapper:
 
 			return output
 
+	def getA2TCount(self):
+		"""
+		gets the list of A2T entries from the database in
+		order of the number of artists which are linked to
+		the tags
+
+		returns
+		-------
+		list of tags in the database, in order of number of
+		artists linking to one tag
+		"""
+		data = []
+		output = []
+
+		try:
+			self.connect()
+
+			self.cur.execute("SELECT tags.id, tags.name, COUNT( * ) AS cnt\
+			FROM tags\
+			INNER JOIN a2t ON a2t.tagid = tags.id\
+			WHERE a2t.score >5\
+			GROUP BY tags.id\
+			ORDER BY cnt")
+	
+			data = self.cur.fetchall()
+			#turn data from tuples into list of items
+	
+		except: 
+			print "Error!"
+	
+		finally:
+
+			self.disconnect()
+
+			return data
 
 	def getArtists(self):
 		"""

@@ -183,6 +183,8 @@ class ClusterModule:
 
 			output.append(list(set(taglist[1]) - (set (output[0] + taglist[2])))[:3]) 
 			output.append(list(set(taglist[2]) - (set (output[1] + output[0])))[:3]) 
+
+			print str(taglist)
 		else:
 			print "Not enough tags to calculate tag difference"
 			output = [[],[],[]]
