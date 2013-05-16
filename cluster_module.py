@@ -109,6 +109,8 @@ class ClusterModule:
 		#gets the set of currently playing stations
 		playingStationSet = sr.getStationPlayingArtist(artist)
 		
+		print playingStationSet
+
 		#gets the set of historically played stations
 		historicalStationSet = db.getStationTuplesForArtist(artist) 
 

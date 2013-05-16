@@ -100,6 +100,7 @@ class ShoutcastWrapper:
 		args = {"ct" : artist, "f" : "json", "k" : self.apiKey}
 
 		try:
+
 			request = requests.get(self.nowPlayingUrl, params=args)
 			data = request.json()
 
@@ -108,10 +109,11 @@ class ShoutcastWrapper:
 
 			for item in stationDictList:
 				#stationList.append((item['name'], item['lc'], item['id'], item['ct'], item['br'], item['mt']))
-				stationList.append((item['id'], item['name'], True, item['ct'], item['br'], item['nt'], item['lc']))
+				stationList.append((item['id'], item['name'], True, item['ct'], item['br'], item['mt'], item['lc']))
 				
 
 		except Exception as e:
+			print e
 			print "No artists found OR http request error"
 			stationList = []
 
