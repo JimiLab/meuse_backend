@@ -14,7 +14,7 @@ sr = ShoutcastWrapper()
 pickle_filename = "/Users/meuse/Meuse/env/meuse/meuse/meuse/diversity/stations.pickle"
 output_filename = "/Users/meuse/Meuse/env/meuse/meuse/meuse/diversity/output.csv"
 output_string = None
-check_on = True
+check_on = False
 
 if (check_on):
 	stationslist = pickle.load(open("/Users/meuse/Meuse/env/meuse/meuse/meuse/diversity/stations.pickle"))
