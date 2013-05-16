@@ -40,9 +40,11 @@ class ClusterModule:
 		#edit the dataset so that it contains only artist name and not
 		#artist popularity
 		artistdataset = dataset['data']
+
 		newartistdataset = []
 		for i in range(0, len(artistdataset)):
-			newartistdataset.append(artistdataset[i][0][0])
+			if (len(artistdataset[i]) != 0):
+				newartistdataset.append(artistdataset[i][0][0])
 		
 		print "clustering " + str(len(artistdataset))  + " artists"
 
@@ -108,8 +110,6 @@ class ClusterModule:
 
 		#gets the set of currently playing stations
 		playingStationSet = sr.getStationPlayingArtist(artist)
-		
-		print playingStationSet
 
 		#gets the set of historically played stations
 		historicalStationSet = db.getStationTuplesForArtist(artist) 
@@ -125,6 +125,7 @@ class ClusterModule:
 
 			mergedict[itemId] = itemcount
 			mergelist.append((itemId, itemName, False))
+			#mergelist.append(item)
 			itemcount = itemcount + 1
 
 		#add only the unique stations from now playing
@@ -139,10 +140,12 @@ class ClusterModule:
 			if (mergedict.has_key(itemId)):
 				itemnumber = mergedict[itemId]
 				mergelist[itemnumber] = item 
+				
 			#else append the station to the top of the list
 			#and add the station to the db
 			else:
-				mergelist.insert(0, (itemId, itemName, True, itemCT))
+				#mergelist.insert(0, (itemId, itemName, True, itemCT))
+				mergelist.insert(0, item)
 				db.addStationForArtist(artist, (itemName, itemId, itemLC)) 
 
 		#get set of artists for each station
