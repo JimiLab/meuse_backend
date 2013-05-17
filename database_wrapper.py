@@ -264,7 +264,7 @@ class DatabaseWrapper:
 
 		try:
 			self.connect()
-			self.cur.execute("select artist.name, artist.popularity \
+			self.cur.execute("select artist.name, a2s.score \
 				from artist, station, a2s \
 				where station.lastfmid=%s and\
 				station.id = a2s.stationid and\

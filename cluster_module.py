@@ -2,6 +2,7 @@
 conducts the clustering function using scikit-learn
 """
 import json
+import operator
 from database_wrapper import DatabaseWrapper
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction import FeatureHasher
@@ -191,24 +192,58 @@ class ClusterModule:
 
 		return output
 
-	def selectRepresentativeArtists(self, data):
+	def selectRepresentativeArtists(self, data, seedartist):
 		"""
 		selects a representative set of artists using the set difference
+		clean up this method!!
 		
 		parameters
 		----------
 		data: the dataset of 3 clusters of artist sets
+		seedartist: name of the seed artist
 		"""
 		setlist = [] #list of unique sets
 		differencelist = [] #list of set differences
 		outputlist = []
-
+		datadicts = []
+		outputdicts = []
+		sortedoutputlist = []
+	
 		#make sure there is enough data
 		if (len(data) > 2):
-		#calculate set differences
+			#calculate set differences
 			setlist.append(list(set(data[0]) - (set (data[1] + data[2])))) 
 			setlist.append(list(set(data[1]) - (set (data[0] + data[2])))) 
 			setlist.append(list(set(data[2]) - (set (data[1] + data[0])))) 
+			#calculate the artist score
+			#add the artist scores to 3 dicts
+			for cluster in data:
+				currentdict = {}
+				outputdicts.append({})
+				for artist in cluster:
+					currentdict[artist[0]] = artist[1]
+
+				datadicts.append(currentdict)
+
+			#calculate the new score for each artist
+			for i in range(0, len(datadicts)):
+				currentcluster = datadicts[i]
+
+				for artist in currentcluster:
+					artistscore = currentcluster[artist]
+					for j in range (0, len(datadicts)):
+						if i != j and datadicts[j].has_key(artist):
+							artistscore = artistscore - datadicts[j][artist]
+					outputdicts[i][artist] = artistscore
+
+				#do a pass to check if the seed artist is in the dicts
+				if seedartist in outputdicts[i]: del outputdicts[i][seedartist]
+
+			for outputdict in outputdicts:
+				sortedoutputlist.append(sorted(outputdict.iteritems(), key=operator.itemgetter(1), reverse=True)[:3])
+						
+			print sortedoutputlist
+
 		else:
 			print "Not enough artists to recommend"
 			setlist = [[],[],[]]
@@ -216,8 +251,9 @@ class ClusterModule:
 		#sort the lists in order of popularity
 		for item in setlist:
 			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[:3])
-		
-		return outputlist
+		print outputlist
+
+		return sortedoutputlist
 	
 	def getDataResponseForArtist(self, artist):
 		"""
@@ -350,7 +386,7 @@ class ClusterModule:
 			topstations.append(("",""))
 
 		#pick the representative artist for each set
-		topartists = self.selectRepresentativeArtists(clusteredset['data'])
+		topartists = self.selectRepresentativeArtists(clusteredset['data'], artist)
 
 		#pick the top tags for each station
 		toptags = self.selectTopStationTags(topstations)
