@@ -28,10 +28,11 @@ def readcsvfile():
 	return stationsdata_processed
 
 def getcolumnfromdata(data, column):
+	print str(len(data[0])) + ", "+ str(column)
 	output = []
 	
 	for row in data:
-		if len(row) > 2:
+		if len(row) - 1>= column:
 			output.append(row[column])
 	
 	return output
@@ -66,6 +67,8 @@ def main():
 		#search for seedartist
 		seedartistpattern = ".*" + seedartist + ".*" 
 
+		prevelement = ""
+		
 		#display intersection with seed artist
 		for element in datarow:
 			
@@ -78,31 +81,43 @@ def main():
 				print "remove"
 				totalcount = totalcount - 1
 
-			totalcount = totalcount + 1
+			if (element != prevelement):
+				totalcount = totalcount + 1
+				prevelement = element
+			
+			else:
+				print "remove"
 
 		#raw_input()
 
+		prevpe = ""
+		
 		#display intersection with predictedartist
 		for element in datarow:
 			for predictedartist in predictedartists:
-				predictedartistpattern = ".*" + predictedartist[0] + ".*"
-				try:
-					if (re.match(predictedartistpattern, element)):
-						predictedartistcount = predictedartistcount + 1
-				except:
-					print "Error"
+				if predictedartist != [] and len(predictedartist) > 1 :
+					try:
+						predictedartistpattern = ".*" + predictedartist[0] + ".*"
+						if (re.match(predictedartistpattern, element)):
+							predictedartistcount = predictedartistcount + 1
+					except:
+						print "Error"
+			prevpe = element
 
-
+		prevnpe = ""
+		
 		#display intersection with nonpredictedartist
 		for element in datarow:
+			
 			for predictedartist in nonpredictedartists:
-				predictedartistpattern = ".*" + predictedartist[0] + ".*"
-				try:
-					if (re.match(predictedartistpattern, element)):
-						nonpredictedartistcount = nonpredictedartistcount + 1
-				except:
-					print "Error"
-
+				if predictedartist != [] and element != prevnpe:
+					try:
+						predictedartistpattern = ".*" + predictedartist[0] + ".*"
+						if (re.match(predictedartistpattern, element)):
+							nonpredictedartistcount = nonpredictedartistcount + 1
+					except:
+						print "Error"
+			prevnpe = element
 
 	print "seedartist: " + str(seedartistcount) + ", " + str((float(seedartistcount)/totalcount))
 	print "predictedartist: " + str(predictedartistcount) + ", " + str((float(predictedartistcount) / 3.0))

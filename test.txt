@@ -1,0 +1,93 @@
+(dp0
+Vdata
+p1
+(lp2
+(lp3
+(lp4
+I36424
+aVHariKaraoke Radio
+p5
+aI01
+aVThe Beatles - With A Little Help From My Friends
+p6
+aa(lp7
+(lp8
+VRadiohead
+p9
+aF10.9765
+aa(lp10
+VJohn Lennon
+p11
+aF10.3832
+aa(lp12
+VBee Gees
+p13
+aF9.9736
+aaa(lp14
+Vclassic rock
+p15
+aVrock
+p16
+aVbritish
+p17
+aaa(lp18
+(lp19
+I46718
+aVRadio Outlaw's Time Machine
+p20
+aI01
+aVThe Beatles - A Day In The Life
+p21
+aa(lp22
+(lp23
+VThe Doors
+p24
+aF10.6878
+aa(lp25
+VDavid Bowie
+p26
+aF10.6736
+aa(lp27
+VJay-Z
+p28
+aF10.6703
+aaa(lp29
+Vstoner
+p30
+aVHendrix
+p31
+aVblues-rock
+p32
+aaa(lp33
+(lp34
+I82404
+aVDJ Lor
+p35
+aI01
+aVThe Beatles - Free As A Bird
+p36
+aa(lp37
+(lp38
+V30 Seconds to Mars
+p39
+aF10.4484
+aa(lp40
+VBoston
+p41
+aF9.94748
+aa(lp42
+VJackson Browne
+p43
+aF9.55321
+aaa(lp44
+Vfolk rock
+p45
+aVfemale vocalists
+p46
+aVEmo rock
+p47
+aaasVsuccess
+p48
+VTrue
+p49
+s.

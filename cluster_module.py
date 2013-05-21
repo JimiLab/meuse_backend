@@ -246,7 +246,7 @@ class ClusterModule:
 
 		else:
 			print "Not enough artists to recommend"
-			setlist = [[],[],[]]
+			sortedoutputlist = [[[],[],[]],[[],[],[]],[[],[],[]]]
 
 		#sort the lists in order of popularity
 		for item in setlist:
@@ -312,7 +312,7 @@ class ClusterModule:
 			topstations.append(("",""))
 
 		#pick the representative artist for each set
-		topartists = self.selectRepresentativeArtists(clusteredset['data'])
+		topartists = self.selectRepresentativeArtists(clusteredset['data'], artist)
 
 		#pick the top tags for each station
 		toptags = self.selectTopStationTags(topstations)

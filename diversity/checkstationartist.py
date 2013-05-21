@@ -16,7 +16,7 @@ output_filename = "/Users/meuse/Meuse/env/meuse/meuse/meuse/diversity/output.csv
 output_string = None
 check_on = False
 
-if (check_on):
+i (check_on):
 	stationslist = pickle.load(open("/Users/meuse/Meuse/env/meuse/meuse/meuse/diversity/stations.pickle"))
 	counter = 0
 
@@ -42,3 +42,5 @@ if (check_on):
 	#append the string to the file
 	with open(output_filename, "a") as myfile:
 	    myfile.write(output_string)
+
+
