@@ -154,6 +154,16 @@ class Downloader:
 		#add to a2t, tags
 		#dbwr.addTags(artistsAndTags)
 
+	def decay_a2s(self):
+		"""
+		decays the artist to station mapping by 0.05 
+		"""
+		dbwr = database_wrapper.DatabaseWrapper()
+			
+		print ("Decaying a2s now")
+		dbwr.decay_a2s()
+		print ("Done!")
+
 	def download_stations(self):
 		"""
 		downloads all the stations to the database

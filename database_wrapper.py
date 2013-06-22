@@ -15,6 +15,7 @@ class DatabaseWrapper:
 	username = "cs205user"
 	password = "ithaca"
 	database = "meuse2"
+	A2S_DECAY = 0.95
 
 	con = None
 	cur = None
@@ -36,6 +37,26 @@ class DatabaseWrapper:
 		"""	
 		if (self.con):
 			self.con.close()
+
+	def decayA2S(self):
+		"""
+		decays the a2s score by multiplying each a2s score by
+		0.95
+		"""
+
+		try:
+			self.connect()
+			
+			self.cur.execute("update A2S a\
+			set a.score = a.score * %d", self.A2S_DECAY)
+
+		except mdb.Error, e: 
+			print "Error!"
+			print "Error %d: %s" % (e.args[0],e.args[1])
+
+		finally:
+			self.disconnect()
+
 
 	def addStationForArtist(self, artist, station):
 		"""
