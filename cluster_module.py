@@ -14,6 +14,26 @@ class ClusterModule:
 	clusters stations by artist using scikit-learn.
 	"""
 	numberOfClusters = 3
+	
+	minimumArtistsToCluster = 10
+	maximumArtistsToCluster = 30
+
+	def getMoreArtists(self, currentdataset):
+		"""
+		downloads more artists to cluster by checking for stations 
+		playing similar artists
+		
+		parameters
+		----------
+		currentdataset - the current artist data set
+		
+		returns
+		-------
+		dataset with a number of artists above the threshold
+		"""
+		
+		
+
 
 	def cluster(self, dataset):
 		"""
@@ -47,16 +67,21 @@ class ClusterModule:
 			if (len(artistdataset[i]) != 0):
 				newartistdataset.append(artistdataset[i][0][0])
 		
+		#if the number of artists is not enough, get more artists 
+		#here!!!
 		print "clustering " + str(len(artistdataset))  + " artists"
+
+		if len(artistdataset) < self.maximumArtistsToCluster:
+
+			print "we need more artists to cluster"
+			self.getMoreArtists(artistdataset)
 
 		datacounts = hasher.fit_transform(newartistdataset)
 		#tfidfcounts = transformer.fit_transform(datacounts)
 		
 		#disabled tf-idf because too slow
 		#km.fit(tfidfcounts)
-		print "clustering"
 		km.fit(datacounts)
-		print "clustering done"
 
 		labeleddata = km.labels_
 
@@ -185,7 +210,6 @@ class ClusterModule:
 			output.append(list(set(taglist[1]) - (set (output[0] + taglist[2])))[:3]) 
 			output.append(list(set(taglist[2]) - (set (output[1] + output[0])))[:3]) 
 
-			print str(taglist)
 		else:
 			print "Not enough tags to calculate tag difference"
 			output = [[],[],[]]
@@ -251,7 +275,6 @@ class ClusterModule:
 		#sort the lists in order of popularity
 		for item in setlist:
 			outputlist.append(sorted(item, key=lambda tup: tup[1], reverse=True)[:3])
-		print outputlist
 
 		return sortedoutputlist
 	
@@ -348,13 +371,11 @@ class ClusterModule:
 
 		#get the data for the artist
 		dataset = self.getPlayingStations(artist)
-		
+
 		#error check - if no artists
 		if len(dataset['data']) < 4:
 			return json.dumps({"success" : "False", "data" : []})
 		
-		print "clustering"
-
 		#cluster the data
 		clusteredset = self.cluster(dataset)
 		
@@ -404,7 +425,6 @@ def main():
 	dataset = db.getStationSetForArtist("Coldplay")
 	output = cluster.cluster(dataset)
 
-	print(output)
 
 if  __name__ =='__main__':main()
 
