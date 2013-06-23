@@ -161,7 +161,7 @@ class Downloader:
 		dbwr = database_wrapper.DatabaseWrapper()
 			
 		print ("Decaying a2s now")
-		dbwr.decay_a2s()
+		dbwr.decayA2S()
 		print ("Done!")
 
 	def download_stations(self):
